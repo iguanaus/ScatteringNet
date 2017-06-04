@@ -15,13 +15,14 @@ import time
 
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
-cum_loss_file = "dieletric_loss_power_one.txt"
+cum_loss_file = "dieletric_loss.csv"
+val_loss_file = "dielectric_loss_val.csv"
 resuse_weights = False
-data_test_file= "data/dielectric_spectrums_power_one.csv"
-data_train_file= "data/dielectric_spectrums_power_one_val.csv"
-data_test_file2= "data/dielectric_spectrums_power_two.csv"
-data_train_file2= "data/dielectric_spectrums_power_two_val.csv"
-output_weights_folder = "results/Dielectric_Power/"
+data_test_file= "data/dielectric_spectrums_four.csv"
+data_train_file= "data/dielectric_spectrums_four_val.csv"
+#data_test_file2= "data/dielectric_spectrums_power_two.csv"
+#data_train_file2= "data/dielectric_spectrums_power_two_val.csv"
+output_weights_folder = "results/Dielectric_Four/"
 n_batch = 100
 numEpochs=5000
 lr_rate = 0.0005
@@ -53,42 +54,19 @@ def forwardprop(X, w_1, w_2,w_3,w_4,w_5,w_6):
 #b b b b b       4 4 4 4 4
 #c c c c c       5 5 5 5 5
 
-def get_data(test_file="data/test.csv",file_val="data/test_val.csv",test_file2="data/test.csv",file_val2="data/test_val.csv"):
+def get_data(test_file="data/test.csv",file_val="data/test_val.csv",percentTest=0.2):
 
-    #train_X = np.reshape(np.transpose(np.genfromtxt(file_val, delimiter=',')),(-1,1)) #THis is for single input
-    train_X_one = np.genfromtxt(file_val, delimiter=',')
-    train_X_two = np.genfromtxt(file_val2, delimiter=',') #This is for list input
-    print(train_X_one.shape)
-    print(train_X_two.shape)
-    train_X = np.vstack((train_X_one,train_X_two))
-    train_Y_one = np.transpose(np.genfromtxt(test_file, delimiter=','))
-    train_Y_two = np.transpose(np.genfromtxt(test_file2, delimiter=','))
-    train_Y = np.vstack((train_Y_one,train_Y_two))
-    #print(train_Y[0])
+    train_X = np.genfromtxt(file_val, delimiter=',')
+    train_Y = np.transpose(np.genfromtxt(test_file,delimiter=','))
 
-    print("Train X Shape: " , train_X.shape)
+    X_train, X_val, y_train, y_val = train_test_split(train_X,train_Y,test_size=percentTest,random_state=42)
 
-    indices = np.random.permutation(train_X.shape[0]) #This gives us the ordering
-    new_train_X = []
-    new_train_Y = []
-    for ele in indices:
-        #new_train_X.append([train_X[ele][0]])#This is for single inputs. 
-        new_train_X.append(list(train_X[ele]))#This is for a list of inputs
-        new_train_Y.append(list(train_Y[ele]))
-
-    new_train_X = np.array(new_train_X)
-    new_train_Y = np.array(new_train_Y)
-
-    print("X shape: " , new_train_X.shape)
-    print("Y shape: " , new_train_Y.shape)
-
-   
-    return new_train_X, new_train_Y 
+    return X_train, y_train, X_val, y_val
 
 
 
 def main():
-    train_X, train_Y = get_data(data_test_file,data_train_file,data_test_file2,data_train_file2)
+    train_X, train_Y , val_X, val_Y = get_data(data_test_file,data_train_file)
     #print("Train_X: " , train_X)
     #os.exit()
 
@@ -155,6 +133,7 @@ def main():
         #print("Train x shape: " , train_X.shape)
         cum_loss = 0
         f2 = open(cum_loss_file,'w')
+        f3 = open(val_loss_file,'w')
 
         start_time=time.time()
         print("========                         Iterations started                  ========")
@@ -176,6 +155,13 @@ def main():
                 curEpoch +=1            
                 f2.write(str(float(cum_loss))+str("\n"))
                 if (curEpoch % 10 == 0 or curEpoch == 1):
+                    #Calculate the validation loss
+
+                    val_loss = sess.run(cost,feed_dict={X:val_X,y:val_Y})
+                    print("Validation loss: " , str(val_loss))
+                    f3.write(str(float(val_loss))+str("\n"))
+                    f3.flush()
+
                     myvals0 = sess.run(yhat,feed_dict={X:batch_x,y:batch_y})
                     print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
                     myvals0 = sess.run(yhat,feed_dict={X:train_X[0:1],y:train_Y[0:1]})

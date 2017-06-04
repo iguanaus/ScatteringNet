@@ -1,0 +1,3 @@
+*.csv
+ScatteringNet_Tensorflow/data
+ScatteringNet_Tensorflow/results
