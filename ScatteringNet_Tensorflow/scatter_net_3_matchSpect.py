@@ -17,9 +17,9 @@ RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
 cum_loss_file = "short_fixed_net_5x20.txt"
 resuse_weights = True
-data_test_file= "data/test_answer.csv"
-data_train_file= "results/DielectricExpanded/test_dielectric_large_30_10_40_10_50_val.csv"
-init_list =[30,30,30,30,30]
+data_test_file= "results/Dielectric_Four/test_dielectric_large_45_15_40_15_10.csv"
+data_train_file= "results/Dielectric_Four/test_dielectric_large_45_15_40_15_10_val.csv"
+init_list =[20,20,20,20]
 #[[ 20.22009659  20.06668854  20.03667641  20.72088623]]
 numInput = len(init_list)
 
@@ -33,10 +33,9 @@ def forwardprop(X, w_1, w_2,w_3,w_4,w_5,w_6):
     Forward-propagation.
     IMPORTANT: yhat is not softmax since TensorFlow's softmax_cross_entropy_with_logits() does that internally.
     """
+    X = tf.maximum(X,10)
+    X = tf.minimum(X,100)
 
-    #The X's I want to take the max at. 
-    X = tf.maximum(X,10)#max(X,10) #Make sure it is above 10
-    X = tf.minimum(X,60) #Make sure it is below 40.
 
     h    = tf.nn.sigmoid(tf.matmul(X, w_1))  # The \sigma function
     h1    = tf.nn.sigmoid(tf.matmul(h, w_3))  # The \sigma function
@@ -61,8 +60,7 @@ def get_data(test_file="test.csv",file_val="test_val.csv"):
 
     train_Y = np.transpose(np.genfromtxt(data_test_file, delimiter=','))
 
-
-    print(train_Y)
+    #print(train_Y[0])
 
 
 
@@ -137,15 +135,15 @@ def main():
     # Weight initializations
     if resuse_weights:
         #weight_1 = np.array([np.loadtxt("results/Dielectric_Four/w_1.txt",delimiter=',')])[0]
-        weight_1 = np.loadtxt("results/DielectricExpanded/w_1.txt",delimiter=",")
+        weight_1 = np.loadtxt("results/Dielectric_Four/w_1.txt",delimiter=",")
         #print("Weight 1: " , weight_1)
         #print("Weight 1: " , weight_1)
-        weight_2 = np.loadtxt("results/DielectricExpanded/w_2.txt",delimiter=',')
+        weight_2 = np.loadtxt("results/Dielectric_Four/w_2.txt",delimiter=',')
         #print("Weight 2: " , weight_2)
-        weight_3 = np.loadtxt("results/DielectricExpanded/w_3.txt",delimiter=',')
-        weight_4 = np.loadtxt("results/DielectricExpanded/w_4.txt",delimiter=',')
-        weight_5 = np.loadtxt("results/DielectricExpanded/w_5.txt",delimiter=',')
-        weight_6 = np.loadtxt("results/DielectricExpanded/w_6.txt",delimiter=',')
+        weight_3 = np.loadtxt("results/Dielectric_Four/w_3.txt",delimiter=',')
+        weight_4 = np.loadtxt("results/Dielectric_Four/w_4.txt",delimiter=',')
+        weight_5 = np.loadtxt("results/Dielectric_Four/w_5.txt",delimiter=',')
+        weight_6 = np.loadtxt("results/Dielectric_Four/w_6.txt",delimiter=',')
         w_1 = tf.Variable(weight_1,dtype=tf.float32)
         #print(w_1)
         w_2 = tf.Variable(weight_2,dtype=tf.float32)
@@ -170,27 +168,9 @@ def main():
     
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
-
-    #Oh wait, the easy way to do this is have the y be '1' for those that you want.
-
-    topval = tf.abs(tf.matmul(y,tf.transpose(tf.abs(yhat)))) #This will select all the values that we want.
-
-    botval = tf.abs(tf.matmul(tf.abs(y-1),tf.transpose(tf.abs(yhat)))) #This will get the values that we do not want. 
-
-
-    #topval = tf.mean(tf.multiply(yhay,y))#This would select only the ones that we want
-
-    #botval = tf.mean(tf.multiply(yhat,tf.abs(y-1)))#THis would select the opposte batch
-
-    #cost = 1.0/topval
-    cost = botval/topval#topval#/botval
-
-    #Then we just need to feed to y the ones that we want to maximize.
-
-    
     #Output float values)
     #cost    = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=yhat))
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0005, decay=0.9).minimize(cost,var_list=[X])
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0003, decay=0.9).minimize(cost,var_list=[X])
     #updates = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
 
     # Run SGD
@@ -202,7 +182,7 @@ def main():
         n_iter = 10000000
         step = 0
 
-        numEpochs=1000
+        numEpochs=2000
 
         curEpoch=0
         #print("Train x shape: " , train_X.shape)
@@ -212,13 +192,12 @@ def main():
         start_time=time.time()
         print("========                         Iterations started                  ========")
 
-        #print("Train y: " , train_Y)
+        print("Train y: " , train_Y)
 
         while curEpoch < numEpochs:
 
             #batch_x = train_X[step * n_batch : (step+1) * n_batch]
             batch_y = train_Y#[step * n_batch : (step+1) * n_batch]
-            #print("BatchY: ", train_Y)
             sess.run(optimizer, feed_dict={y: batch_y})
             loss = sess.run(cost,feed_dict={y:batch_y})
             cum_loss += loss        
@@ -232,7 +211,7 @@ def main():
                 if (curEpoch % 100 == 0 or curEpoch == 1):
                     myvals0 = sess.run(yhat,feed_dict={y:batch_y})
                     print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
-                    print(list((myvals0)[0]))
+                    print(myvals0-batch_y)
                     print(X.eval())
                 cum_loss = 0
         #print(w_1)

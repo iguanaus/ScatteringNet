@@ -1,9 +1,3 @@
-# Implementation of a simple MLP network with one hidden layer. Tested on the iris data set.
-# Requires: numpy, sklearn>=0.18.1, tensorflow>=1.0
-
-# NOTE: In order to make the code simple, we rewrite x * W_1 + b_1 = x' * W_1'
-# where x' = [x | 1] and W_1' is the matrix W_1 appended with a new row with elements b_1's.
-# Similarly, for h * W_2 + b_2
 import tensorflow as tf
 import numpy as np
 from sklearn import datasets
@@ -15,18 +9,21 @@ import time
 
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
-cum_loss_file = "dieletric_loss.csv"
-val_loss_file = "dielectric_loss_val.csv"
-resuse_weights = False
-data_test_file= "data/dielectric_spectrums_four.csv"
-data_train_file= "data/dielectric_spectrums_four_val.csv"
-#data_test_file2= "data/dielectric_spectrums_power_two.csv"
-#data_train_file2= "data/dielectric_spectrums_power_two_val.csv"
+
+
+cum_loss_file = "results/Dielectric_Four/temp_loss.txt"
+resuse_weights = True
+data_test_file= "data/double_dielectrics.csv"
+data_train_file= "data/double_dielectrics_val.csv"
+n_batch = 1
+numEpochs=50000
 output_weights_folder = "results/Dielectric_Four/"
-n_batch = 100
-numEpochs=5000
-lr_rate = 0.0005
+lr_rate = 0.00005
 lr_decay = 0.9
+weightDir = 'results/Dielectric_Four/'
+
+#This is the position in the list to sample.
+spects_to_sample = [30000]
 
 
 def init_weights(shape):
@@ -74,6 +71,7 @@ def main():
 
     # Layer's sizes
     x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
+    print("My x size: " , x_size)
     h_size = 20                # Number of hidden nodes
     y_size = train_Y.shape[1]   # Number of outcomes (3 iris flowers)
 
@@ -83,14 +81,15 @@ def main():
 
     # Weight initializations
     if resuse_weights:
-        weight_1 = np.array([np.loadtxt("results/w_1_large.txt",delimiter=',')])
-        #print("Weight 1: " , weight_1)
-        weight_2 = np.loadtxt("results/w_2_large.txt",delimiter=',')
+        weight_1 = np.loadtxt(weightDir + "w_1.txt",delimiter=',')
+        #weight_1 = np.array(np.loadtxt("results/FixedTwoNetwork/w_1.txt",delimiter=','))
+        print("Weight 1: " , weight_1)
+        weight_2 = np.loadtxt(weightDir +"w_2.txt",delimiter=',')
         #print("Weight 2: " , weight_2)
-        weight_3 = np.loadtxt("results/w_3_large.txt",delimiter=',')
-        weight_4 = np.loadtxt("results/w_4_large.txt",delimiter=',')
-        weight_5 = np.loadtxt("results/w_5_large.txt",delimiter=',')
-        weight_6 = np.loadtxt("results/w_6_large.txt",delimiter=',')
+        weight_3 = np.loadtxt(weightDir +"w_3.txt",delimiter=',')
+        weight_4 = np.loadtxt(weightDir +"w_4.txt",delimiter=',')
+        weight_5 = np.loadtxt(weightDir +"w_5.txt",delimiter=',')
+        weight_6 = np.loadtxt(weightDir +"w_6.txt",delimiter=',')
         w_1 = tf.Variable(weight_1,dtype=tf.float32)
         #print(w_1)
         w_2 = tf.Variable(weight_2,dtype=tf.float32)
@@ -111,6 +110,9 @@ def main():
         w_2 = init_weights((h_size, y_size))
 
     # Forward propagation
+    print("My X Values: ")
+    print("X  :" , X)
+    print("w_1:" , w_1)
     yhat    = forwardprop(X, w_1, w_2,w_3,w_4,w_5,w_6)
     
     # Backward propagation
@@ -133,68 +135,78 @@ def main():
         #print("Train x shape: " , train_X.shape)
         cum_loss = 0
         f2 = open(cum_loss_file,'w')
-        f3 = open(val_loss_file,'w')
 
         start_time=time.time()
         print("========                         Iterations started                  ========")
+        
+
 
 
         #print("Train X: " , train_X)
-        while curEpoch < numEpochs:
+        for ele in spects_to_sample:
+            step = ele
 
             batch_x = train_X[step * n_batch : (step+1) * n_batch]
-            #print("Batch X: " , batch_x)
             batch_y = train_Y[step * n_batch : (step+1) * n_batch]
-            sess.run(optimizer, feed_dict={X: batch_x, y: batch_y})
-            loss = sess.run(cost,feed_dict={X:batch_x,y:batch_y})
-            cum_loss += loss        
-            step += 1
-            if step == int(train_X.shape[0]/n_batch):
-                print("Loss: " , loss)
-                step = 0
-                curEpoch +=1            
-                f2.write(str(float(cum_loss))+str("\n"))
-                if (curEpoch % 10 == 0 or curEpoch == 1):
-                    #Calculate the validation loss
-
-                    val_loss = sess.run(cost,feed_dict={X:val_X,y:val_Y})
-                    print("Validation loss: " , str(val_loss))
-                    f3.write(str(float(val_loss))+str("\n"))
-                    f3.flush()
-
-                    myvals0 = sess.run(yhat,feed_dict={X:batch_x,y:batch_y})
-                    print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
-                    myvals0 = sess.run(yhat,feed_dict={X:train_X[0:1],y:train_Y[0:1]})
-                    #print("Myvals0:",myvals0)
-                    #print("Batch y: " , train_Y[0:1])
-                    #print("Residuals:", myvals0-train_Y[0:1])
-                    myvals0 = myvals0[0]
-                    #myvals1 = sess.run(yhat,feed_dict={X:train_X[-180:-179],y:train_Y[-180:-179]})[0] #Large dim inputs
-                    myvals2 = sess.run(yhat,feed_dict={X:train_X[-2:-1],y:train_Y[-2:-1]})[0]
-                    f2.flush()
-                cum_loss = 0
-        #print(w_1)
-        weight_1 = w_1.eval()
-        weight_2 = w_2.eval()
-        weight_3 = w_3.eval()
-        weight_4 = w_4.eval()
-        weight_5 = w_5.eval()
-        weight_6 = w_6.eval()
-        #print(weight_1)
-        #print(np.array(weight_1))
-        np.savetxt(output_weights_folder +"w_1.txt",weight_1,delimiter=',')
-        np.savetxt(output_weights_folder +"w_2.txt",weight_2,delimiter=',')
-        np.savetxt(output_weights_folder +"w_3.txt",weight_3,delimiter=',')
-        np.savetxt(output_weights_folder +"w_4.txt",weight_4,delimiter=',')
-        np.savetxt(output_weights_folder +"w_5.txt",weight_5,delimiter=',')
-        np.savetxt(output_weights_folder +"w_6.txt",weight_6,delimiter=',')
 
 
 
+            print("Input: " , batch_x[0])
+            print("Desired out: " , batch_y)
+            myvals0 = sess.run(yhat,feed_dict={X:batch_x,y:batch_y})
+            print("NN out: " , myvals0)
+            #I need to write these to a file.
+            filename = 'test_out_file_'+str(ele)+'.txt'
+            f = open(filename,'w')
+            f.write("XValue\nActual\nPredicted\n")
+            f.write(str(batch_x[0])+"\n")
+            for item in list(batch_y[0]):
+                f.write(str(item) + ",")
+            f.write("\n")
+            for item in list(myvals0[0]):
+                f.write(str(item) + ",")
+            f.write("\n")
+            f.flush()
+            f.close()
+            print("Wrote to: " + str(filename))
+
+            
 
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
         
     sess.close()
 
-if __name__ == '__main__':
-    main()
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(
+        description="Physics Net Training")
+    parser.add_argument("--data",type=str,default='data/dielectric_spectrums_four')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Four/')
+        #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
+    parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
+    parser.add_argument("--spect_to_sample",type=int,default=10000)
+    parser.add_argument("--sample_val",type=str,default="True")
+    parser.add_argument("--num_layers",default=4)
+    parser.add_argument("--n_hidden",default=30)
+    parser.add_argument("--percent_val",default=.2)
+
+    args = parser.parse_args()
+    dict = vars(args)
+
+    for i in dict:
+        if (dict[i]=="False"):
+            dict[i] = False
+        elif dict[i]=="True":
+            dict[i] = True
+        
+    kwargs = {  
+            'data':dict['data'],
+            'output_folder':dict['output_folder'],
+            'weight_name_load':dict['weight_name_load'],
+            'spects_to_sample':dict['spects_to_sample'],
+            'sample_val':dict['sample_val'],
+            'num_layers':dict['num_layers'],
+            'n_hidden':dict['n_hidden'],
+            'percent_val':dict['percent_val']
+            }
+
+    main(**kwargs)

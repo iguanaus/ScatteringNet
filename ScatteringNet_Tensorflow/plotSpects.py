@@ -31,7 +31,7 @@ def read_file(filename):
 
 legend = []
 
-name,a1,p1 = read_file("test_out_file_70050.txt")
+name,a1,p1 = read_file("test_out_file_30000.txt")
 legend.append(name + "_actual")
 legend.append(name+"_predicted")
 
