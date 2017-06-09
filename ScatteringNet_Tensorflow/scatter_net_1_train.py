@@ -19,14 +19,14 @@ def init_weights(shape):
     return tf.Variable(weights)
 
 def save_weights(weights,output_folder,weight_name_save,num_layers):
-    for i in xrange(0, num_layers+2):
+    for i in xrange(0, num_layers+1):
         weight_i = weights[i].eval()
         np.savetxt(output_folder+weight_name_save+"w_"+str(i)+".txt",weight_i,delimiter=',')
     return
 
 def load_weights(output_folder,weight_load_name,num_layers):
     weights = []
-    for i in xrange(0, num_layers+2):
+    for i in xrange(0, num_layers+1):
         weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
         w_i = tf.Variable(weight_i,dtype=tf.float32)
         weights.append(w_i)
@@ -132,18 +132,18 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='data/double_dielectrics')
+    parser.add_argument("--data",type=str,default='data/order_die')
     parser.add_argument("--reuse_weights",type=str,default='False')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Massive/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
-    parser.add_argument("--numEpochs",type=int,default=2000)
+    parser.add_argument("--numEpochs",type=int,default=1000)
     parser.add_argument("--lr_rate",default=.0005)
     parser.add_argument("--lr_decay",default=.9)
-    parser.add_argument("--num_layers",default=6)
-    parser.add_argument("--n_hidden",default=50)
+    parser.add_argument("--num_layers",default=4)
+    parser.add_argument("--n_hidden",default=75)
     parser.add_argument("--percent_val",default=.2)
 
     args = parser.parse_args()

@@ -11,27 +11,15 @@ def read_file(filename):
 	line1 = fo.readline()
 	line2 = fo.readline()
 	line3 = fo.readline()
-	#These lines were all just the normal lines. Now the numbers
 	name = str(fo.readline())
-	#print "myline:", fo.readline()[:-2]
-
-
 	a1 = [float(x) for x in fo.readline()[:-2].split(',')]
 	p1 = [float(x) for x in fo.readline()[:-2].split(',')]
-
-	#num2 = float(fo.readline())
-	#a2 = [float(x) for x in fo.readline()[:-2].split(',')]
-	#p2 = [float(x) for x in fo.readline()[:-2].split(',')]
-
-	#num3 = float(fo.readline())
-	#a3 = [float(x) for x in fo.readline()[:-2].split(',')]
-	#p3 = [float(x) for x in fo.readline()[:-2].split(',')]
-	#print("A3:",a3)
 	return name,a1, p1	
+
 
 legend = []
 
-name,a1,p1 = read_file("test_out_file_30000.txt")
+name,a1,p1 = read_file("results/Dielectric_Massive/test_out_file_5000.txt")
 legend.append(name + "_actual")
 legend.append(name+"_predicted")
 

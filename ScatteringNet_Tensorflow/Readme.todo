@@ -1,0 +1,26 @@
+Data:
+  dielectric_spectrums_four.csv
+    4 layers, 10-40, step 2's.
+    Silver, Silica, Silver, Silica
+  double_dielectrics.csv
+    4 layers, 10-100, step 6's.
+    Silica, TiO2, Silica, TiO2
+  test_answer.csv
+    Spectrum
+  test_small_fixed.csv
+    2 layers, 10-40, steps 1. Uses .001 notation
+    Silver, Gold
+  order_die.csv
+     5 layers. silica, ti02, silica, ti02, silica
+     Order is 8 on all.
+     Note it was made by a hybrid, so it could be inaccurate.
+     
+
+
+Results:
+
+
+
+Steps to analyze results:
+    Run plotLoss.py with the loss file.
+    

@@ -17,7 +17,7 @@ def init_weights(shape):
 
 def load_weights(output_folder,weight_load_name,num_layers):
     weights = []
-    for i in xrange(0, num_layers+2):
+    for i in xrange(0, num_layers+1):
         print("Opening: " , i)
         weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
         w_i = tf.Variable(weight_i,dtype=tf.float32)
@@ -26,7 +26,7 @@ def load_weights(output_folder,weight_load_name,num_layers):
 
 def forwardprop(X, weights,num_layers):
     htemp = None
-    for i in xrange(0, num_layers+1):
+    for i in xrange(0, num_layers):
         print("Multiplying: " , i)
         if i ==0:
             htemp = tf.nn.sigmoid(tf.matmul(X,weights[i]))    
@@ -119,10 +119,10 @@ if __name__=="__main__":
     parser.add_argument("--output_folder",type=str,default='results/Dielectric_Massive/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
-    parser.add_argument("--spect_to_sample",type=int,default=10000)
+    parser.add_argument("--spect_to_sample",type=int,default=5000)
     parser.add_argument("--sample_val",type=str,default="True")
-    parser.add_argument("--num_layers",default=4)
-    parser.add_argument("--n_hidden",default=20)
+    parser.add_argument("--num_layers",default=6)
+    parser.add_argument("--n_hidden",default=50)
     parser.add_argument("--percent_val",default=.2)
 
     args = parser.parse_args()

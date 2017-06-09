@@ -1,242 +1,151 @@
-# Implementation of a simple MLP network with one hidden layer. Tested on the iris data set.
-# Requires: numpy, sklearn>=0.18.1, tensorflow>=1.0
-
-# NOTE: In order to make the code simple, we rewrite x * W_1 + b_1 = x' * W_1'
-# where x' = [x | 1] and W_1' is the matrix W_1 appended with a new row with elements b_1's.
-# Similarly, for h * W_2 + b_2
 import tensorflow as tf
 import numpy as np
 from sklearn import datasets
 from sklearn.model_selection import train_test_split
 import os
 import time
-#from numpy import genfromtxt
-
+import argparse, os
 
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
-cum_loss_file = "short_fixed_net_5x20.txt"
-resuse_weights = True
-data_test_file= "results/Dielectric_Four/test_dielectric_large_45_15_40_15_10.csv"
-data_train_file= "results/Dielectric_Four/test_dielectric_large_45_15_40_15_10_val.csv"
-init_list =[20,20,20,20]
-#[[ 20.22009659  20.06668854  20.03667641  20.72088623]]
-numInput = len(init_list)
 
 def init_weights(shape):
     """ Weight initialization """
     weights = tf.random_normal(shape, stddev=.1)
     return tf.Variable(weights)
 
-def forwardprop(X, w_1, w_2,w_3,w_4,w_5,w_6):
-    """
-    Forward-propagation.
-    IMPORTANT: yhat is not softmax since TensorFlow's softmax_cross_entropy_with_logits() does that internally.
-    """
-    X = tf.maximum(X,10)
-    X = tf.minimum(X,100)
+def forwardprop(X, weights,num_layers,minLimit,maxLimit):
+    X = tf.maximum(X,minLimit)
+    X = tf.minimum(X,maxLimit)
+
+    htemp = None
+    for i in xrange(0, num_layers):
+        print("Multiplying: " , i)
+        if i ==0:
+            htemp = tf.nn.sigmoid(tf.matmul(X,weights[i]))    
+        else:   
+            htemp = tf.nn.sigmoid(tf.matmul(htemp,weights[i]))
+    yval = tf.matmul(htemp,weights[-1])
+    return yval
+
+def gen_data_first(data,test_file,data_folder):
+    x_file = data+"_val.csv"
+    y_file = data_folder+test_file+".csv"
+    train_X = np.genfromtxt(x_file, delimiter=',')
+    train_Y = np.array([np.genfromtxt(y_file, delimiter=',')]) #37
+
+    train_train_X = np.genfromtxt(data+"_val.csv",delimiter=',')
+    #I need the max and min of this. 
+    print train_train_X.all()
+    max_val = np.amax(train_train_X)
+    min_val = np.amin(train_train_X)
+
+    return train_X, train_Y , max_val, min_val
+
+def load_weights(output_folder,weight_load_name,num_layers):
+    weights = []
+    for i in xrange(0, num_layers+1):
+        print("Opening: " , i)
+        weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
+        w_i = tf.Variable(weight_i,dtype=tf.float32)
+        weights.append(w_i)
+    return weights
 
 
-    h    = tf.nn.sigmoid(tf.matmul(X, w_1))  # The \sigma function
-    h1    = tf.nn.sigmoid(tf.matmul(h, w_3))  # The \sigma function
-    h2    = tf.nn.sigmoid(tf.matmul(h1, w_4))
-    h3    = tf.nn.sigmoid(tf.matmul(h2, w_5))
-    h4    = tf.nn.sigmoid(tf.matmul(h3, w_6))
-    
-    yhat = tf.matmul(h4, w_2)  # The \varphi function
-    return yhat
+def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num_layers,n_hidden,percent_val,lr_rate,lr_decay,num_iterations):
+    train_X, train_Y, max_val, min_val = gen_data_first(data,test_file,data_folder)
 
-#This method reads from the 'X' and 'Y' file and gives in the input as an array of arrays (aka if the input dim is 5 and there are 10 training sets, the input is a 10X 5 array)
-#a a a a a       3 3 3 3 3 
-#b b b b b       4 4 4 4 4
-#c c c c c       5 5 5 5 5
-
-def get_data(test_file="test.csv",file_val="test_val.csv"):
-    #trainX = np.array([])
-    #For single
-    #train_X = np.transpose(np.genfromtxt('test_val.csv', delimiter=',')),(-1,1))
-    #For Multi
-    train_X = np.genfromtxt(data_train_file, delimiter=',')
-
-    train_Y = np.transpose(np.genfromtxt(data_test_file, delimiter=','))
-
-    #print(train_Y[0])
-
-
-
-    indices = np.random.permutation(train_X.shape[0]) #This gives us the ordering
-
-    #print("Sample of x: " , train_X[0])
-    #print("Sample of y: " , train_Y[0])
-    new_train_X = []
-    new_train_Y = []
-    for ele in indices:
-        #For multiple
-        new_train_X.append(list(train_X[ele]))
-        #For single
-        #new_train_X.append(list(train_X[ele][0]))
-        new_train_Y.append(list(train_Y[ele]))
-    
-    #print("New train X: " , new_train_X)
-    #print("New train Y: " , new_train_Y)
-
-    new_train_X = np.array(new_train_X)
-    new_train_Y = np.array(new_train_Y)
-
-    #print("Final New train X: " , new_train_X)
-    #print("Final New train Y: " , new_train_Y)
-
-
-
-
-    print("X shape: " , new_train_X.shape)
-    print("Y shape: " , new_train_Y.shape)
-
-    #train_X = np.array([[1,1,1,1],[2,2,2,2],[3,3,3,3],[4,4,4,4],[5,5,5,5]])
-    #train_Y = np.array([[2,2],[3,3],[4,4],[5,5],[6,6]])
-    return new_train_X, new_train_Y 
-
-def gen_data_first(test_file="test.csv"):
-    #train_X = np.reshape(np.transpose(np.genfromtxt(data_train_file, delimiter=',')),(-1,1))
-    train_X = np.array([np.genfromtxt(data_train_file, delimiter=',')])
-    train_Y = np.array([np.genfromtxt(data_test_file, delimiter=',')]) #37
-    print(train_X,train_Y)
-    return train_X, train_Y
-
-
-def main():
-    #train_X, train_Y = get_data()
-    train_X, train_Y = gen_data_first()
-
-    #print("Train ")
-    print("It should be: " , train_X)
-
-    #print("Train_X: " , train_X)
-    #os.exit()
-
-    #train_X, test_X, train_y, test_y = get_iris_data()
-
-    # Layer's sizes
     print("Train x shape is: " , train_X.shape)
     x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
-    h_size = 20                # Number of hidden nodes
     y_size = train_Y.shape[1]   # Number of outcomes (3 iris flowers)
 
-    # Symbols
-    #X = tf.placeholder("float", shape=[None, x_size])
-    #X = tf.Variable()
-
-    X = tf.get_variable(name="b1", shape=[1,numInput], initializer=tf.constant_initializer(init_list))
-
-    #print("X: " , X)
+    X = tf.get_variable(name="b1", shape=[1,x_size], initializer=tf.constant_initializer(init_list))
 
     y = tf.placeholder("float", shape=[None, y_size])
 
-    # Weight initializations
-    if resuse_weights:
-        #weight_1 = np.array([np.loadtxt("results/Dielectric_Four/w_1.txt",delimiter=',')])[0]
-        weight_1 = np.loadtxt("results/Dielectric_Four/w_1.txt",delimiter=",")
-        #print("Weight 1: " , weight_1)
-        #print("Weight 1: " , weight_1)
-        weight_2 = np.loadtxt("results/Dielectric_Four/w_2.txt",delimiter=',')
-        #print("Weight 2: " , weight_2)
-        weight_3 = np.loadtxt("results/Dielectric_Four/w_3.txt",delimiter=',')
-        weight_4 = np.loadtxt("results/Dielectric_Four/w_4.txt",delimiter=',')
-        weight_5 = np.loadtxt("results/Dielectric_Four/w_5.txt",delimiter=',')
-        weight_6 = np.loadtxt("results/Dielectric_Four/w_6.txt",delimiter=',')
-        w_1 = tf.Variable(weight_1,dtype=tf.float32)
-        #print(w_1)
-        w_2 = tf.Variable(weight_2,dtype=tf.float32)
-        w_3 = tf.Variable(weight_3,dtype=tf.float32)
-        w_4 = tf.Variable(weight_4,dtype=tf.float32)
-        w_5 = tf.Variable(weight_5,dtype=tf.float32)
-        w_6 = tf.Variable(weight_6,dtype=tf.float32)
-        #os.exit()
-    else:
-        w_1 = init_weights((x_size, h_size))
-        #print(w_1)
-
-        w_3 = init_weights((h_size, h_size))
-        w_4 = init_weights((h_size, h_size))
-        w_5 = init_weights((h_size, h_size))
-        w_6 = init_weights((h_size, h_size))
-
-        w_2 = init_weights((h_size, y_size))
+    weights = load_weights(output_folder,weight_name_load,num_layers)
 
     # Forward propagation
-    yhat    = forwardprop(X, w_1, w_2,w_3,w_4,w_5,w_6)
-    
+    yhat    = forwardprop(X, weights,num_layers,min_val,max_val)
+
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
-    #Output float values)
-    #cost    = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=yhat))
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=0.0003, decay=0.9).minimize(cost,var_list=[X])
-    #updates = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost,var_list=[X])
 
-    # Run SGD
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
-        n_batch = 1
-
-        n_iter = 10000000
-        step = 0
-
-        numEpochs=2000
-
-        curEpoch=0
-        #print("Train x shape: " , train_X.shape)
+        step = 0       
         cum_loss = 0
-        f2 = open(cum_loss_file,'w')
+
+        cost_file_name = output_folder+"match_train_loss.txt"
+        cost_file = open(cost_file_name,'w')
 
         start_time=time.time()
         print("========                         Iterations started                  ========")
 
-        print("Train y: " , train_Y)
-
-        while curEpoch < numEpochs:
-
-            #batch_x = train_X[step * n_batch : (step+1) * n_batch]
-            batch_y = train_Y#[step * n_batch : (step+1) * n_batch]
-            sess.run(optimizer, feed_dict={y: batch_y})
-            loss = sess.run(cost,feed_dict={y:batch_y})
-            cum_loss += loss        
+        while step < num_iterations:
+            sess.run(optimizer,feed_dict={y:train_Y})
+            cum_loss += sess.run(cost,feed_dict={y:train_Y})
             step += 1
-            #print("Step: " , step)
-            #print("Loss: " , loss)
-            if step == 100:
-                step = 0
-                curEpoch +=1            
-                f2.write(str(float(cum_loss))+str("\n"))
-                if (curEpoch % 100 == 0 or curEpoch == 1):
-                    myvals0 = sess.run(yhat,feed_dict={y:batch_y})
-                    print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
-                    print(myvals0-batch_y)
+            if step % int(num_iterations/100.0) == 0:
+                cost_file.write(str(float(cum_loss))+str("\n"))
+                if (step % int(num_iterations/10.0) == 0 or step == 1):
+                    myvals0 = sess.run(yhat,feed_dict={y:train_Y})
+                    print("Step: " + str(step) + " : Loss: " + str(cum_loss))
+                    print(myvals0-train_Y)
                     print(X.eval())
+
                 cum_loss = 0
-        #print(w_1)
-        weight_1 = w_1.eval()
-        weight_2 = w_2.eval()
-        weight_3 = w_3.eval()
-        weight_4 = w_4.eval()
-        weight_5 = w_5.eval()
-        weight_6 = w_6.eval()
-        print(weight_1)
-        print(np.array(weight_1))
-        print(X.eval())
-        # np.savetxt("results/w_1.txt",weight_1,delimiter=',')
-        # np.savetxt("results/w_2.txt",weight_2,delimiter=',')
-        # np.savetxt("results/w_3.txt",weight_3,delimiter=',')
-        # np.savetxt("results/w_4.txt",weight_4,delimiter=',')
-        # np.savetxt("results/w_5.txt",weight_5,delimiter=',')
-        # np.savetxt("results/w_6.txt",weight_6,delimiter=',')
-
-
-
 
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
-        
     sess.close()
 
-if __name__ == '__main__':
-    main()
+if __name__=="__main__":
+    parser = argparse.ArgumentParser(
+        description="Physics Net Training")
+    parser.add_argument("--data",type=str,default='data/double_dielectrics')
+    parser.add_argument("--data_folder",type=str,default='data/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Massive/')
+        #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
+    parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
+    parser.add_argument("--test_file",type=str,default='test_dielectric_large_45_15_40_15')
+    parser.add_argument("--init_list",type=str,default="50,50,50,50")
+    parser.add_argument("--num_layers",default=6)
+    parser.add_argument("--n_hidden",default=50)
+    parser.add_argument("--percent_val",default=.2)
+    parser.add_argument("--num_iterations",default=200000)
+    parser.add_argument("--lr_rate",default=.0003)
+    parser.add_argument("--lr_decay",default=.9)
+
+    args = parser.parse_args()
+    dict = vars(args)
+
+    for i in dict:
+        if (dict[i]=="False"):
+            dict[i] = False
+        elif dict[i]=="True":
+            dict[i] = True
+    dict['init_list']=dict['init_list'].split(',')
+    dict['init_list'] = [int(ele) for ele in dict['init_list']]
+        
+    kwargs = {  
+        'data':dict['data'],
+        'data_folder':dict['data_folder'],
+        'output_folder':dict['output_folder'],
+        'weight_name_load':dict['weight_name_load'],
+        'test_file':dict['test_file'],
+        'init_list':dict['init_list'],
+        'num_layers':dict['num_layers'],
+        'n_hidden':dict['n_hidden'],
+        'percent_val':dict['percent_val'],
+        'lr_rate':dict['lr_rate'],
+        'lr_decay':dict['lr_decay'],
+        'num_iterations':dict['num_iterations']
+        }
+
+    main(**kwargs)
+
+
+
+
