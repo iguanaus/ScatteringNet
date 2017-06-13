@@ -18,34 +18,42 @@ def init_weights(shape):
     weights = tf.random_normal(shape, stddev=.1)
     return tf.Variable(weights)
 
-def init_weights(shape):
+def init_bias(shape):
     """ Weight initialization """
-    weights = tf.random_normal(shape, stddev=.1)
-    return tf.Variable(weights)
+    biases = tf.random_normal([shape], stddev=.1)
+    return tf.Variable(biases)
 
-
-def save_weights(weights,output_folder,weight_name_save,num_layers):
+def save_weights(weights,biases,output_folder,weight_name_save,num_layers):
     for i in xrange(0, num_layers+1):
         weight_i = weights[i].eval()
         np.savetxt(output_folder+weight_name_save+"w_"+str(i)+".txt",weight_i,delimiter=',')
+        bias_i = biases[i].eval()
+        np.savetxt(output_folder+weight_name_save+"b_"+str(i)+".txt",bias_i,delimiter=',')
+        print("Bias: " , i, " : ", bias_i)
     return
 
 def load_weights(output_folder,weight_load_name,num_layers):
     weights = []
+    biases = []
     for i in xrange(0, num_layers+1):
         weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
         w_i = tf.Variable(weight_i,dtype=tf.float32)
         weights.append(w_i)
-    return weights
+        bias_i = np.loadtxt(output_folder+weight_load_name+"b_"+str(i)+".txt",delimiter=',')
+        b_i = tf.Variable(bias_i,dtype=tf.float32)
+        biases.append(b_i)
+    return weights , biases
 
-def forwardprop(X, weights,num_layers):
+def forwardprop(X, weights, biases, num_layers):
     htemp = None
     for i in xrange(0, num_layers):
         if i ==0:
-            htemp = tf.nn.sigmoid(tf.matmul(X,weights[i]))    
+            htemp = tf.add(tf.nn.relu(tf.matmul(X,weights[i])),biases[i])    
         else:   
-            htemp = tf.nn.sigmoid(tf.matmul(htemp,weights[i]))
-    yval = tf.matmul(htemp,weights[-1])
+            htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
+        print("Bias: " , i, " : ", biases[i])
+    yval = tf.add(tf.matmul(htemp,weights[-1]),biases[-1])
+    print("Last bias: " , biases[-1])
     return yval
 
 #This method reads from the 'X' and 'Y' file and gives in the input as an array of arrays (aka if the input dim is 5 and there are 10 training sets, the input is a 10X 5 array)
@@ -78,18 +86,19 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     biases = []
     # Weight initializations
     if reuse_weights:
-        weights = load_weights(output_folder,weight_name_load,num_layers)
+        (weights, biases) = load_weights(output_folder,weight_name_load,num_layers)
 
     else:
         for i in xrange(0,num_layers):
             if i ==0:
                 weights.append(init_weights((x_size,n_hidden)))
-	    else:
+            else:
                 weights.append(init_weights((n_hidden,n_hidden)))
-	    biases.append(init_weights
+            biases.append(init_bias(n_hidden))
         weights.append(init_weights((n_hidden,y_size)))
+        biases.append(init_bias(y_size))
     # Forward propagation
-    yhat    = forwardprop(X, weights,num_layers)
+    yhat    = forwardprop(X, weights,biases,num_layers)
     
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
@@ -132,7 +141,7 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
                     print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
                     train_loss_file.flush()
                 cum_loss = 0
-        save_weights(weights,output_folder,weight_name_save,num_layers)
+        save_weights(weights,biases,output_folder,weight_name_save,num_layers)
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
     sess.close()
 
@@ -140,13 +149,13 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='data/order_die')
-    parser.add_argument("--reuse_weights",type=str,default='False')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order_LayerTest/')
+    parser.add_argument("--reuse_weights",type=str,default='True')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order_BiasTest/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
-    parser.add_argument("--numEpochs",type=int,default=4000)
+    parser.add_argument("--numEpochs",type=int,default=100)
     parser.add_argument("--lr_rate",default=.0005)
     parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)
