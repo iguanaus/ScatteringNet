@@ -18,6 +18,12 @@ def init_weights(shape):
     weights = tf.random_normal(shape, stddev=.1)
     return tf.Variable(weights)
 
+def init_weights(shape):
+    """ Weight initialization """
+    weights = tf.random_normal(shape, stddev=.1)
+    return tf.Variable(weights)
+
+
 def save_weights(weights,output_folder,weight_name_save,num_layers):
     for i in xrange(0, num_layers+1):
         weight_i = weights[i].eval()
@@ -69,7 +75,7 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     X = tf.placeholder("float", shape=[None, x_size])
     y = tf.placeholder("float", shape=[None, y_size])
     weights = []
-
+    biases = []
     # Weight initializations
     if reuse_weights:
         weights = load_weights(output_folder,weight_name_load,num_layers)
@@ -78,8 +84,9 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
         for i in xrange(0,num_layers):
             if i ==0:
                 weights.append(init_weights((x_size,n_hidden)))
-            else:
+	    else:
                 weights.append(init_weights((n_hidden,n_hidden)))
+	    biases.append(init_weights
         weights.append(init_weights((n_hidden,y_size)))
     # Forward propagation
     yhat    = forwardprop(X, weights,num_layers)
@@ -134,12 +141,12 @@ if __name__=="__main__":
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='data/order_die')
     parser.add_argument("--reuse_weights",type=str,default='False')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order_LayerTest/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
-    parser.add_argument("--numEpochs",type=int,default=1000)
+    parser.add_argument("--numEpochs",type=int,default=4000)
     parser.add_argument("--lr_rate",default=.0005)
     parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)
