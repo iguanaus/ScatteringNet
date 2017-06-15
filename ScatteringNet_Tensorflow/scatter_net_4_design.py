@@ -97,17 +97,10 @@ def main(data,data_folder,output_folder,weight_name_load,spect_file,init_list,nu
             loss = sess.run(cost,feed_dict={y:train_Y})
             cum_loss += loss        
             step += 1
-
-            if step % int(num_iterations/100.0) == 0:
-                cost_file.write(str(float(cum_loss))+str("\n"))
-                if (step % int(num_iterations/10.0) == 0 or step == 1):
-                    myvals0 = sess.run(yhat,feed_dict={y:train_Y})
-                    print("Step: " + str(step) + " : Loss: " + str(cum_loss))
-                    print(myvals0-train_Y)
-                    print(X.eval())
-                cost_file.flush()
-
-                cum_loss = 0
+            cost_file.write(str(float(cum_loss))+str("\n"))
+            print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
+            cost_file.flush()
+            cum_loss = 0
 
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
     sess.close()
@@ -116,18 +109,18 @@ def main(data,data_folder,output_folder,weight_name_load,spect_file,init_list,nu
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='data/double_dielectrics') #For input size.
+    parser.add_argument("--data",type=str,default='data/order_die') #For input size.
     parser.add_argument("--data_folder",type=str,default='data/') #For where the test_answer is
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Massive/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--spect_file",type=str,default='test_answer')
-    parser.add_argument("--init_list",type=str,default="50,50,50,50")
-    parser.add_argument("--num_layers",default=6)
-    parser.add_argument("--n_hidden",default=50)
+    parser.add_argument("--init_list",type=str,default="40,40,40,40,40")
+    parser.add_argument("--num_layers",default=4)
+    parser.add_argument("--n_hidden",default=75)
     parser.add_argument("--percent_val",default=.2)
     parser.add_argument("--num_iterations",default=200000)
-    parser.add_argument("--lr_rate",default=.0004)
+    parser.add_argument("--lr_rate",default=.05)
     parser.add_argument("--lr_decay",default=.9)
 
     args = parser.parse_args()

@@ -1,4 +1,4 @@
-function sigma = total_cs(a,omega,eps)
+function sigma = total_cs(a,omega,eps,order)
 %TOTAL_CS Total cross section of a spherical multi-layer particle.
 %   TOTAL_CS(k,l,a,omega,eps) returns a N-by-2 matrix containing the total
 %   scattering cross section in first column and total absorption cross section
@@ -25,9 +25,12 @@ function sigma = total_cs(a,omega,eps)
 
 %   2012 Wenjun Qiu @ MIT
 
-sigma = spherical_cs(1,1,a,omega,eps)...
-    + spherical_cs(1,2,a,omega,eps)...
-    + spherical_cs(1,3,a,omega,eps)...
-    + spherical_cs(2,1,a,omega,eps)...
-    + spherical_cs(2,2,a,omega,eps)...
-    + spherical_cs(2,3,a,omega,eps);
+if nargin < 4
+	order = 3;
+end
+
+sigma = 0;
+for l = 1:order
+	sigma = sigma + spherical_cs(1,l,a,omega,eps) + spherical_cs(2,l,a,omega,eps);
+end
+

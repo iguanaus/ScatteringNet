@@ -3,7 +3,7 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 #'results/Dielectric_Massive/train_train_loss_0.txt',
-loss_files=['results/Dielectric_Massive/train_val_loss_4_val.txt','results/Dielectric_Massive/train_val_loss_5_val.txt']
+loss_files=['results/Dielectric_Order_BiasTest/train_val_loss_1_val_bias_test.txt','results/Dielectric_Order_BiasTest/train_val_loss_val_bias_test_sigmoid_nobias.txt']
 
 lossValues = np.genfromtxt(loss_files[0],delimiter=',')
 lossValues2 = np.genfromtxt(loss_files[1],delimiter=',')
@@ -31,9 +31,9 @@ newVals2 = range(0,len(lossValues2))
 # #print len(newVals3)
 
 
-for i in range(0,len(newVals)):
- 	print("I val: " , i)
- 	newVals2[i] = i+len(newVals)
+#for i in range(0,len(newVals)):
+# 	print("I val: " , i)
+# 	newVals2[i] = i+len(newVals)
 
 # for i in range(0,len(newVals5)):
 # 	print("I val: " , i)
@@ -48,6 +48,6 @@ plt.plot(newVals2,lossValues2)
 plt.xlabel("Epochs trained (in 10's)")
 plt.ylabel("MSE Validation Error")
 plt.title("Validation error (25k params)")
-plt.legend(['Training Error', 'Restart Training Error'])
+plt.legend(['ReLu - Bias', 'Sigmoid'])
 #plt.plot(lossValues_oldbatch)
 plt.show()
