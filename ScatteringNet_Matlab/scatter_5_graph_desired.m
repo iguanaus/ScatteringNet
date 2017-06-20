@@ -1,8 +1,6 @@
 data = load('data.mat');
 lambda = linspace(400, 800, 401)';
 omega = 2*pi./lambda;
-eps_silver = interp1(data.omega_silver,data.epsilon_silver,omega);
-eps_gold   = interp1(data.omega_gold,data.epsilon_gold,omega);
 
 values = [];
 myspects = [];
@@ -37,12 +35,9 @@ plot(lambda(1:2:399),[spect(1:2:399,1),spect2(1:2:399,1)])
 hold off
 
 xlabel('Wavelength (nm)');
-%ylabel('Cross Scattering Amplitude (normalized by power in dipole channel)');
 ylabel('\sigma/\pi r^2');
 %title('Residuals');
 title('Geometries to match desired spectrums');
-%legend('14/25/24/38 after 2 hours','14/25/24/38 after 6 hours');
-%legend('Desired super-scattering at 465nm','Iteration One, 3053.4,30,30,30,30','Iteration Two, 33,35,28,25,26','Iteration Three, 19,60,33,51,10');
 legend('Desired scattering',strcat('NN - Nanoparticle',num2str(r1),'/',num2str(r2),'/',num2str(r3),'/',num2str(r4)),'Matlab');%,'a');
 csvwrite('test_dielectric.csv',myspects);
 csvwrite('test_dielectric_val.csv',values);

@@ -14,19 +14,30 @@ def init_weights(shape):
     weights = tf.random_normal(shape, stddev=.1)
     return tf.Variable(weights)
 
-def forwardprop(X, weights,num_layers,minLimit,maxLimit):
-    #X = tf.maximum(X,minLimit)
-    #X = tf.minimum(X,maxLimit)
+def load_weights(output_folder,weight_load_name,num_layers):
+    weights = []
+    biases = []
+    for i in xrange(0, num_layers+1):
+        weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
+        w_i = tf.Variable(weight_i,dtype=tf.float32)
+        weights.append(w_i)
+        bias_i = np.loadtxt(output_folder+weight_load_name+"b_"+str(i)+".txt",delimiter=',')
+        b_i = tf.Variable(bias_i,dtype=tf.float32)
+        biases.append(b_i)
+    return weights , biases
 
+def forwardprop(X, weights, biases, num_layers):
     htemp = None
     for i in xrange(0, num_layers):
-        print("Multiplying: " , i)
         if i ==0:
-            htemp = tf.nn.sigmoid(tf.matmul(X,weights[i]))    
+            htemp = tf.add(tf.nn.relu(tf.matmul(X,weights[i])),biases[i])    
         else:   
-            htemp = tf.nn.sigmoid(tf.matmul(htemp,weights[i]))
-    yval = tf.matmul(htemp,weights[-1])
+            htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
+        print("Bias: " , i, " : ", biases[i])
+    yval = tf.add(tf.matmul(htemp,weights[-1]),biases[-1])
+    print("Last bias: " , biases[-1])
     return yval
+
 
 def gen_data_first(data,test_file,data_folder):
     x_file = data+"_val.csv"
@@ -42,15 +53,6 @@ def gen_data_first(data,test_file,data_folder):
 
     return train_X, train_Y , max_val, min_val
 
-def load_weights(output_folder,weight_load_name,num_layers):
-    weights = []
-    for i in xrange(0, num_layers+1):
-        print("Opening: " , i)
-        weight_i = np.loadtxt(output_folder+weight_load_name+"w_"+str(i)+".txt",delimiter=',')
-        w_i = tf.Variable(weight_i,dtype=tf.float32)
-        weights.append(w_i)
-    return weights
-
 
 def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num_layers,n_hidden,percent_val,lr_rate,lr_decay,num_iterations):
     train_X, train_Y, max_val, min_val = gen_data_first(data,test_file,data_folder)
@@ -59,51 +61,63 @@ def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num
     x_size = train_X.shape[1]   # Number of input nodes: 4 features and 1 bias
     y_size = train_Y.shape[1]   # Number of outcomes (3 iris flowers)
 
-    init_list_rand = tf.constant(np.random.rand(1,x_size)*50.0+30.0,dtype=tf.float32)
+    i = 0
+    start_time=time.time()
+    weights, biases = load_weights(output_folder,weight_name_load,num_layers)
 
-    #X = tf.get_variable(name="b1", initializer=init_list_rand)
+    while True:
+        i += 1
+        #init_list_rand = tf.constant(np.random.rand(1,x_size)*50.0+30.0,dtype=tf.float32)
 
-    X = tf.get_variable(name="b1", shape=[1,x_size], initializer=tf.constant_initializer(init_list))
+        #X = tf.get_variable(name="b1"+ str(i), initializer=init_list_rand)
 
-    y = tf.placeholder("float", shape=[None, y_size])
+        X = tf.get_variable(name="b1", shape=[1,x_size], initializer=tf.constant_initializer(init_list))
 
-    weights = load_weights(output_folder,weight_name_load,num_layers)
+        y = tf.placeholder("float", shape=[None, y_size])
 
-    # Forward propagation
-    yhat    = forwardprop(X, weights,num_layers,min_val,max_val)
+        
 
-    # Backward propagation
-    extra_cost = tf.reduce_sum(tf.square(tf.minimum(X,30)-30) + tf.square(tf.maximum(X,70)-70))
-    #Advanced Version
-    cost = tf.reduce_sum(tf.square(y-yhat))+5.0*extra_cost*extra_cost
-    optimizer = tf.train.AdamOptimizer(learning_rate=lr_rate, beta2=lr_decay,epsilon=0.1).minimize(cost,var_list=[X])
-    #Basic Version
-    #cost = tf.reduce_sum(tf.square(y-yhat))
-    #optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost,var_list=[X])
+        # Forward propagation
+        yhat    = forwardprop(X, weights,biases,num_layers)
 
-    with tf.Session() as sess:
-        init = tf.global_variables_initializer()
-        sess.run(init)
-        step = 0       
-        cum_loss = 0
+        # Backward propagation
+        extra_cost = tf.reduce_sum(tf.square(tf.minimum(X,30)-30) + tf.square(tf.maximum(X,70)-70))
+        #Advanced Version
+        cost = tf.reduce_sum(tf.square(y-yhat))+5.0*extra_cost*extra_cost
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(cost,var_list=[X])
+        #optimizer = tf.train.AdamOptimizer(learning_rate=lr_rate, beta2=lr_decay,epsilon=0.1).minimize(cost,var_list=[X])
+        #Basic Version
+        #cost = tf.reduce_sum(tf.square(y-yhat))
+        #optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost,var_list=[X])
 
-        cost_file_name = output_folder+"match_train_loss.txt"
-        cost_file = open(cost_file_name,'w')
 
-        start_time=time.time()
-        print("========                         Iterations started                  ========")
-        prev_losses = 0
-        while step < num_iterations:
-            sess.run(optimizer,feed_dict={y:train_Y})
-            cum_loss += sess.run(cost,feed_dict={y:train_Y})
-            step += 1
-            cost_file.write(str(float(cum_loss))+str("\n"))
-            myvals0 = sess.run(yhat,feed_dict={y:train_Y})
-            print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
-            if abs(cum_loss-prev_losses) < .0001:
-                break
-            prev_losses = cum_loss
+        with tf.Session() as sess:
+            init = tf.global_variables_initializer()
+            sess.run(init)
+            step = 0       
             cum_loss = 0
+
+            cost_file_name = output_folder+"match_train_loss.txt"
+            cost_file = open(cost_file_name,'w')
+
+            
+            print("========                         Iterations started                  ========")
+            prev_losses = 0
+            while step < num_iterations:
+                sess.run(optimizer,feed_dict={y:train_Y})
+                cum_loss += sess.run(cost,feed_dict={y:train_Y})
+                step += 1
+                cost_file.write(str(float(cum_loss))+str("\n"))
+                myvals0 = sess.run(yhat,feed_dict={y:train_Y})
+                print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
+                #if abs(cum_loss-prev_losses) < .0001:
+                #    print("Converged once")
+                #    break
+                prev_losses = cum_loss
+                cum_loss = 0
+        if cum_loss < 1:
+            break
+
 
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
     sess.close()
@@ -111,12 +125,12 @@ def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='data/order_die')
+    parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined')
     parser.add_argument("--data_folder",type=str,default='data/')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Corrected_TiO2/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
-    parser.add_argument("--test_file",type=str,default='test_dielectric_large_62.7_31.2_39.3_64.5_43.9')
+    parser.add_argument("--test_file",type=str,default='test_tio2_fixed33.8_32.3_36.3_35.2_38.9')
     parser.add_argument("--init_list",type=str,default="50,50,50,50,50")
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)

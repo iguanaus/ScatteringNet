@@ -14,22 +14,25 @@ eps_silica = 2.04*ones(length(omega), 1);
 eps_water  = 1.77*ones(length(omega), 1);
 
 eps_silica = 2.04*ones(length(omega), 1);
-eps_tio2 = 8.04*ones(length(omega), 1);
+%eps_tio2 = 8.04*ones(length(omega), 1);
+my_lam = lambda./1000;
+eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
+
 
 % test case one: 40-nm-radius silver sphere in water
 eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_water];
 
 a = [70,70,70,70,70];
-cs_loworder = total_cs(a,omega,eps,7);
-cs_highorder = total_cs(a,omega,eps,15);
+cs_loworder = total_cs(a,omega,eps,8);
+cs_highorder = total_cs(a,omega,eps,25);
 dif = (cs_loworder(1:1:401,1)-cs_highorder(1:1:401,1))./cs_loworder(1:1:401,1);
-plot(lambda, [dif]);
-%spect = total_cs(a,omega,eps,3);
-%spect2= total_cs(a,omega,eps,4);
+%plot(lambda, [dif]);
+spect = total_cs(a,omega,eps,8);
+spect2= total_cs(a,omega,eps,50);
 %spect3= total_cs(a,omega,eps,5);
 %spect4= total_cs(a,omega,eps,7);
 %spect5= total_cs(a,omega,eps,10);
-%plot(lambda, [spect(1:1:401,1),spect2(1:1:401,1),spect3(1:1:401,1),spect4(1:1:401,1),spect5(1:1:401,1)]);
+plot(lambda, [spect(1:1:401,1),spect2(1:1:401,1)]);
 legend('3','4','5','7','10');
 xlabel('Wavelength (nm)');
 %ylabel('\sigma/\pi r^2');

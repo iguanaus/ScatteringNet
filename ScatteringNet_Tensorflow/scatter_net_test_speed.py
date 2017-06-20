@@ -1,3 +1,7 @@
+'''
+    This program trains a feed-forward neural network. It takes in a geometric design (the radi of concentric spheres), and outputs the scattering spectrum. It is meant to be the first program run, to first train the weights. 
+'''
+
 import tensorflow as tf
 import numpy as np
 from sklearn import datasets
@@ -5,7 +9,6 @@ from sklearn.model_selection import train_test_split
 import os
 import time
 import argparse, os
-#from numpy import genfromtxt
 
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
@@ -14,6 +17,20 @@ def init_weights(shape):
     """ Weight initialization """
     weights = tf.random_normal(shape, stddev=.1)
     return tf.Variable(weights)
+
+def init_bias(shape):
+    """ Weight initialization """
+    biases = tf.random_normal([shape], stddev=.1)
+    return tf.Variable(biases)
+
+def save_weights(weights,biases,output_folder,weight_name_save,num_layers):
+    for i in xrange(0, num_layers+1):
+        weight_i = weights[i].eval()
+        np.savetxt(output_folder+weight_name_save+"w_"+str(i)+".txt",weight_i,delimiter=',')
+        bias_i = biases[i].eval()
+        np.savetxt(output_folder+weight_name_save+"b_"+str(i)+".txt",bias_i,delimiter=',')
+        print("Bias: " , i, " : ", bias_i)
+    return
 
 def load_weights(output_folder,weight_load_name,num_layers):
     weights = []
@@ -49,30 +66,13 @@ def get_data(data,percentTest=.2,random_state=42):
     y_file = data+".csv"
     train_X = np.genfromtxt(x_file,delimiter=',')
     train_Y = np.transpose(np.genfromtxt(y_file,delimiter=','))
-    try:
-        i = len(train_X[0])
-        X_train, X_val, y_train, y_val = train_test_split(train_X,train_Y,test_size=percentTest,random_state=random_state)
-
-    except:
-        train_X = np.array([train_X])
-        train_Y = np.array([train_Y])
-        X_train = train_X
-        X_val = X_train
-        y_train = train_Y
-        y_val = y_train
-    if True:
-        y_train = y_train[:,0:-1]
-        y_val = y_val[:,0:-1]
-    print("Train X: " , train_X)
-    print("Train Y: " , train_Y)
+    X_train, X_val, y_train, y_val = train_test_split(train_X,train_Y,test_size=percentTest,random_state=random_state)
     return X_train, y_train, X_val, y_val
 
-
-
-def main(data,output_folder,weight_name_load,spect_to_sample,sample_val,num_layers,n_hidden,percent_val):
+def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_batch,numEpochs,lr_rate,lr_decay,num_layers,n_hidden,percent_val):
 
     if not os.path.exists(output_folder):
-        print("ERROR THERE IS NO OUTPUT FOLDER. PLEASE SYNC THIS TO PART 1")
+        os.makedirs(output_folder)
 
     train_X, train_Y , val_X, val_Y = get_data(data,percentTest=percent_val)
 
@@ -82,69 +82,74 @@ def main(data,output_folder,weight_name_load,spect_to_sample,sample_val,num_laye
     # Symbols
     X = tf.placeholder("float", shape=[None, x_size])
     y = tf.placeholder("float", shape=[None, y_size])
+    weights = []
+    biases = []
+    # Weight initializations
+    if reuse_weights:
+        (weights, biases) = load_weights(output_folder,weight_name_load,num_layers)
 
-    weights, biases = load_weights(output_folder,weight_name_load,num_layers)
-
+    else:
+        for i in xrange(0,num_layers):
+            if i ==0:
+                weights.append(init_weights((x_size,n_hidden)))
+            else:
+                weights.append(init_weights((n_hidden,n_hidden)))
+            biases.append(init_bias(n_hidden))
+        weights.append(init_weights((n_hidden,y_size)))
+        biases.append(init_bias(y_size))
+    # Forward propagation
     yhat    = forwardprop(X, weights,biases,num_layers)
     
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
-    
-    # Run SGD
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost)
+
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
         sess.run(init)
+        step = 0
+        curEpoch=0
+        cum_loss = 0
+        numFile = 0 
+        while True:
+            train_file_name = output_folder+"train_train_loss_" + str(numFile) + ".txt"
+            if os.path.isfile(train_file_name):
+                numFile += 1
+            else:
+                break
+        train_loss_file = open(train_file_name,'w')
+        val_loss_file = open(output_folder+"train_val_loss_"+str(numFile) + "_val.txt",'w')
         start_time=time.time()
         print("========                         Iterations started                  ========")
-        x_set = None
-        y_set = None
-        if sample_val:
-            x_set = val_X
-            y_set = val_Y
-        else:
-            x_set = train_X
-            y_set = train_Y
-        print("x_set: " , x_set)
-
-        batch_x = x_set[spect_to_sample : (spect_to_sample+1) ]
-        batch_y = y_set[spect_to_sample : (spect_to_sample+1) ]
-        print("Batch x: " , batch_x)
-
-        mycost = sess.run(cost,feed_dict={X:batch_x,y:batch_y})
-        myvals0 = sess.run(yhat,feed_dict={X:batch_x,y:batch_y})
-
-        filename = output_folder + "test_out_file_"+str(spect_to_sample) + ".txt"
-        f = open(filename,'w')
-        f.write("XValue\nActual\nPredicted\n")
-        print("Batch: " , batch_x)
-        f.write(str(batch_x[0])+"\n")
-        for item in list(batch_y[0]):
-            f.write(str(item) + ",")
-        f.write("\n")
-        for item in list(myvals0[0]):
-            f.write(str(item) + ",")
-        f.write("\n")
-        f.flush()
-        f.close()
-        print("Cost: " , mycost)
-        print("Wrote to: " + str(filename))
-
-    print "========Writing completed in : " + str(time.time()-start_time) + " ========"
+        i = 0
+        while curEpoch < numEpochs:
+            batch_x = train_X[step * n_batch : (step+1) * n_batch]
+            batch_y = train_Y[step * n_batch : (step+1) * n_batch]
+            cum_loss += sess.run(cost,feed_dict={X:batch_x,y:batch_y})
+            i += 1
+            if (i >= 1000):
+                break
+            
         
+    print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
     sess.close()
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/5_layer_tio2_fixed_06_20')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Corrected_TiO2/')
+    parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined')
+    parser.add_argument("--reuse_weights",type=str,default='False')
+    parser.add_argument("--output_folder",type=str,drefault='results/Dielectric_Corrected_TiO2_New')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
-    parser.add_argument("--spect_to_sample",type=int,default=500) #Zero Indexing
-    parser.add_argument("--sample_val",type=str,default="True")
+    parser.add_argument("--weight_name_save",type=str,default="")
+    parser.add_argument("--n_batch",type=int,default=100)
+    parser.add_argument("--numEpochs",type=int,default=1000)
+    parser.add_argument("--lr_rate",default=.0005)
+    parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)
-    parser.add_argument("--percent_val",default=0.2)
+    parser.add_argument("--percent_val",default=.2)
 
     args = parser.parse_args()
     dict = vars(args)
@@ -157,13 +162,21 @@ if __name__=="__main__":
         
     kwargs = {  
             'data':dict['data'],
+            'reuse_weights':dict['reuse_weights'],
             'output_folder':dict['output_folder'],
+            'weight_name_save':dict['weight_name_save'],
             'weight_name_load':dict['weight_name_load'],
-            'spect_to_sample':dict['spect_to_sample'],
-            'sample_val':dict['sample_val'],
+            'n_batch':dict['n_batch'],
+            'numEpochs':dict['numEpochs'],
+            'lr_rate':dict['lr_rate'],
+            'lr_decay':dict['lr_decay'],
             'num_layers':dict['num_layers'],
             'n_hidden':dict['n_hidden'],
             'percent_val':dict['percent_val']
             }
 
     main(**kwargs)
+
+
+
+
