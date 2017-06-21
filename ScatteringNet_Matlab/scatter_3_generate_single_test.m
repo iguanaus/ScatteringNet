@@ -4,16 +4,28 @@ omega = 2*pi./lambda;
 low_bound = 30;
 up_bound = 70;
 
+values = []
 r1 = round(rand*(up_bound-low_bound)+low_bound,1);
 r2 = round(rand*(up_bound-low_bound)+low_bound,1);
 r3 = round(rand*(up_bound-low_bound)+low_bound,1);
 r4 = round(rand*(up_bound-low_bound)+low_bound,1);
 r5 = round(rand*(up_bound-low_bound)+low_bound,1);
+r6 = round(rand*(up_bound-low_bound)+low_bound,1);
+r7 = round(rand*(up_bound-low_bound)+low_bound,1);
+r8 = round(rand*(up_bound-low_bound)+low_bound,1);
+r1 = 62.6
+r2 = 66.2
+r3 = 35.1
+r4 = 66.5
+r5 = 55.3
+r6 = 33.9
+r7 = 41.1
+r8 = 51.9
 
-spect = scatter_0_generate_spectrum([r1,r2,r3,r4,r5]);
+spect = scatter_0_generate_spectrum([r1,r2,r3,r4,r5,r6,r7,r8]);
 myspects = [spect(1:2:401,1)];
-values = [values ; [r1,r2,r3,r4,r5]];
-plot(lambda(1:1:401),myspects);
+values = [values ; [r1,r2,r3,r4,r5,r6,r7,r8]];
+plot(lambda(1:2:401),myspects);
 xlabel('Wavelength (nm)');
 ylabel('\sigma/\pi r^2');
 title('Spectrum Example');

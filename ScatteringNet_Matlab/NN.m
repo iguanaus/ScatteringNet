@@ -1,4 +1,4 @@
-function [f] = NN(weights,biases,input)
+function [f,dfdx] = NN(weights,biases,input)
     %Weights and Biases must be cell arrays of Matrices/Vectors
     %Input must be a 1D Vector
     
@@ -14,13 +14,13 @@ function [f] = NN(weights,biases,input)
     z = 0;
     for i=1:dim
         if layer(i) > 0
-            dydx(i) = 1;
+            dydx(i,i) = 1;
         else
             layer(i)=0;
             z = 1;
         end
     end
-    layer = layer + biases{1}
+    layer = layer + biases{1};
     
     %Append dL_1/dx evaluated at W_1*x+b_1 to chain
     %If dL_1/dx = I, append 1 instead to make it faster
@@ -55,7 +55,7 @@ function [f] = NN(weights,biases,input)
             end
             
         end
-        layer = layer + biases{j}
+        layer = layer + biases{j};
     end
     
     f = layer;

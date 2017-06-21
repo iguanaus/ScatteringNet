@@ -1,3 +1,4 @@
 *.csv
+*.txt
 ScatteringNet_Tensorflow/data
 ScatteringNet_Tensorflow/results

@@ -20,21 +20,21 @@ eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
 
 
 % test case one: 40-nm-radius silver sphere in water
-eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_water];
+eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
 
-a = [70,70,70,70,70];
-cs_loworder = total_cs(a,omega,eps,8);
+a = [70,70,70,70,70,70,70,70];
+cs_loworder = total_cs(a,omega,eps,15);
 cs_highorder = total_cs(a,omega,eps,25);
-dif = (cs_loworder(1:1:401,1)-cs_highorder(1:1:401,1))./cs_loworder(1:1:401,1);
-%plot(lambda, [dif]);
-spect = total_cs(a,omega,eps,8);
-spect2= total_cs(a,omega,eps,50);
+dif = (cs_loworder(1:1:401,1)-cs_highorder(1:1:401,1))./cs_loworder(1:1:401,1)*100.0;
+plot(lambda, [dif]);
+%spect = total_cs(a,omega,eps,8);
+%#spect2= total_cs(a,omega,eps,50);
 %spect3= total_cs(a,omega,eps,5);
 %spect4= total_cs(a,omega,eps,7);
-%spect5= total_cs(a,omega,eps,10);
-plot(lambda, [spect(1:1:401,1),spect2(1:1:401,1)]);
-legend('3','4','5','7','10');
+%spect5= total_cs(a,omega,eps,10);%
+%plot(lambda, [spect(1:1:401,1),spect2(1:1:401,1)]);
+legend('3','25');
 xlabel('Wavelength (nm)');
 %ylabel('\sigma/\pi r^2');
-ylabel('\sigma');
+ylabel('Percent Dif');
 title('Scattering of 240nm radi Versus Increasing Angular Order');

@@ -45,6 +45,11 @@ def gen_data_first(data,test_file,data_folder):
     train_X = np.genfromtxt(x_file, delimiter=',')
     train_Y = np.array([np.genfromtxt(y_file, delimiter=',')]) #37
 
+    #if True:
+    #    y_train = y_train[:,0:-1]
+    #    train_Y = train_Y[:,0:-1]
+
+
     train_train_X = np.genfromtxt(data+"_val.csv",delimiter=',')
     #I need the max and min of this. 
     print train_train_X.all()
@@ -127,10 +132,10 @@ if __name__=="__main__":
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined')
     parser.add_argument("--data_folder",type=str,default='data/')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Corrected_TiO2/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
-    parser.add_argument("--test_file",type=str,default='test_tio2_fixed33.8_32.3_36.3_35.2_38.9')
+    parser.add_argument("--test_file",type=str,default='Test TiO2 Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9')
     parser.add_argument("--init_list",type=str,default="50,50,50,50,50")
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)

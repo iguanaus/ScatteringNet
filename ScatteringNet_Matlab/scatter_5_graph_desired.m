@@ -4,17 +4,17 @@ omega = 2*pi./lambda;
 
 values = [];
 myspects = [];
-r1 = 30;
-r2 = 30;
-r3 = 70.0;
-r4 = 38.6;
-r5 = 54.5;
+r1 = 70.0;
+r2 = 30.2;
+r3 = 44.3;
+r4 = 60.0;
+r5 = 44.1;
 spect = scatter_0_generate_spectrum([r1,r2,r3,r4,r5]);
-r1 = 80;
-r2 = 25.6;
-r3 = 80;
-r4 = 35.6;
-r5 = 50;
+r1 = 70.0;
+r2 = 52.8;
+r3 = 70.0;
+r4 = 34.1;
+r5 = 30.0;
 spect2 = scatter_0_generate_spectrum([r1,r2,r3,r4,r5]);
 % r1 = 39.8;
 % r2 = 17.6;
@@ -26,7 +26,7 @@ myspects = [myspects spect(1:2:401,1)];
 values = [values ; [r1,r2,r3,r4,r5]];
 %plot(lambda(1:5:501),[mylist',spect(1:5:501,1),spect2(1:5:501,1),spect3(1:5:501,1)]);%spect(1:5:501,1));
 hold on
-area([498,502],[4.0,4.0],'EdgeColor','none')
+area([500,520],[4.0,4.0],'EdgeColor','none')
 %area([690,710],[3.5,3.5],'EdgeColor','none')
 alpha(.2)
 %plot(lambda(1:2:399),[mylist',spect(1:2:399,1),spect2(1:2:399,1)])
