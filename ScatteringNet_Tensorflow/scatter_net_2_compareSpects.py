@@ -127,6 +127,7 @@ def main(data,output_folder,weight_name_load,spect_to_sample,sample_val,num_laye
         f.flush()
         f.close()
         print("Cost: " , mycost)
+        print(myvals0)
         print("Wrote to: " + str(filename))
 
     print "========Writing completed in : " + str(time.time()-start_time) + " ========"
@@ -137,13 +138,13 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/5_layer_tio2_fixed_06_20')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20_2_new/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
-    parser.add_argument("--spect_to_sample",type=int,default=500) #Zero Indexing
+    parser.add_argument("--spect_to_sample",type=int,default=1000) #Zero Indexing
     parser.add_argument("--sample_val",type=str,default="True")
     parser.add_argument("--num_layers",default=4)
-    parser.add_argument("--n_hidden",default=100)
+    parser.add_argument("--n_hidden",default=150)
     parser.add_argument("--percent_val",default=0.2)
 
     args = parser.parse_args()

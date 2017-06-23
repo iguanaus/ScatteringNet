@@ -19,7 +19,7 @@ def read_file(filename):
 
 legend = []
 
-name,a1,p1 = read_file("results/Dielectric_TiO2_5_06_20/test_out_file_500.txt")
+name,a1,p1 = read_file("results/Dielectric_TiO2_5_06_20_2_new/test_out_file_1000.txt")
 legend.append(name + "_actual")
 legend.append(name+"_predicted")
 

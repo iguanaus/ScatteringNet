@@ -44,7 +44,7 @@ def load_weights(output_folder,weight_load_name,num_layers):
         biases.append(b_i)
     return weights , biases
 
-def forwardprop(X, weights, biases, num_layers):
+def forwardprop(X, weights, biases, num_layers,dropout=False):
     htemp = None
     for i in xrange(0, num_layers):
         if i ==0:
@@ -52,6 +52,7 @@ def forwardprop(X, weights, biases, num_layers):
         else:   
             htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
         print("Bias: " , i, " : ", biases[i])
+    drop_out = tf.nn.dropout(htemp,0.9)
     yval = tf.add(tf.matmul(htemp,weights[-1]),biases[-1])
     print("Last bias: " , biases[-1])
     return yval
@@ -64,8 +65,18 @@ def forwardprop(X, weights, biases, num_layers):
 def get_data(data,percentTest=.2,random_state=42):
     x_file = data+"_val.csv"
     y_file = data+".csv"
-    train_X = np.genfromtxt(x_file,delimiter=',')
-    train_Y = np.transpose(np.genfromtxt(y_file,delimiter=','))
+    print("Train X: " , np.genfromtxt(x_file,delimiter=','))
+    print(np.genfromtxt(x_file,delimiter=',').shape)
+    print(np.genfromtxt(y_file,delimiter=',').shape)
+
+    
+    train_X = np.genfromtxt(x_file,delimiter=',')#[0:20000,:]
+    print(train_X)
+    train_Y = np.transpose(np.genfromtxt(y_file,delimiter=','))#[0:20000,:]
+    print(train_Y)
+    #for ele in train_Y:
+    #    print len(ele)
+    #    print ele
     X_train, X_val, y_train, y_val = train_test_split(train_X,train_Y,test_size=percentTest,random_state=random_state)
     return X_train, y_train, X_val, y_val
 
@@ -148,14 +159,14 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined/')
+    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/5_layer_tio2_combined_06_20')
     parser.add_argument("--reuse_weights",type=str,default='False')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Corrected_TiO2')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_6_21_test/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
-    parser.add_argument("--numEpochs",type=int,default=1000)
+    parser.add_argument("--numEpochs",type=int,default=2000)
     parser.add_argument("--lr_rate",default=.0005)
     parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)

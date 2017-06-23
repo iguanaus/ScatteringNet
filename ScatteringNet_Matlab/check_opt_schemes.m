@@ -11,15 +11,15 @@ eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_water];
 wgts = cell(0);
 bias = cell(0);
 for i=0:4
-    wgts{i+1} = transpose(load('spectrums/Dielectric_TiO2_5_06_20/w_'+string(i)+'.txt'));
-    bias{i+1} = load('spectrums/Dielectric_TiO2_5_06_20/b_'+string(i)+'.txt');
+    wgts{i+1} = transpose(load('spectrums/Dielectric_TiO2_5_06_20_2_new/w_'+string(i)+'.txt'));
+    bias{i+1} = load('spectrums/Dielectric_TiO2_5_06_20_2_new/b_'+string(i)+'.txt');
 end
-filename = 'spectrums/TestTiO2Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9.csv';
+filename = 'spectrums/TestTiO2Fixed/test_tio2_fixed67.9_36.7_52.1_40.7_43.1.csv';
 myspect = csvread(filename);
 myspect = myspect(1:1:201,1);
 dim = size(wgts);
 
-options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',.5,'SpecifyObjectiveGradient',false);
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',.1,'SpecifyObjectiveGradient',false);
 
 %cost_func_nn = @(x)cost_function_math(x,wgts,bias,dim(2),myspect,omega,eps);
 cost_func_nn = @(x)cost_function_nn(x,wgts,bias,dim(2),myspect);
@@ -40,7 +40,7 @@ for i = 1:50
 
 	[mytime, convergence] = run_opt(start_params,cost_func_nn,options);
 	mytime;
-	if (convergence < .5)
+	if (convergence < .1)
 		convergence = 1.0;
 	else
 		convergence = 0.0;

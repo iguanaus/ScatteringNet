@@ -67,16 +67,17 @@ def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num
     y_size = train_Y.shape[1]   # Number of outcomes (3 iris flowers)
 
     i = 0
+    succes = 0
     start_time=time.time()
     weights, biases = load_weights(output_folder,weight_name_load,num_layers)
 
-    while True:
+    while i < 50:
         i += 1
-        #init_list_rand = tf.constant(np.random.rand(1,x_size)*50.0+30.0,dtype=tf.float32)
+        init_list_rand = tf.constant(np.random.rand(1,x_size)*50.0+30.0,dtype=tf.float32)
 
-        #X = tf.get_variable(name="b1"+ str(i), initializer=init_list_rand)
+        X = tf.get_variable(name="b1"+ str(i), initializer=init_list_rand)
 
-        X = tf.get_variable(name="b1", shape=[1,x_size], initializer=tf.constant_initializer(init_list))
+        #X = tf.get_variable(name="b1", shape=[1,x_size], initializer=tf.constant_initializer(init_list))
 
         y = tf.placeholder("float", shape=[None, y_size])
 
@@ -89,8 +90,8 @@ def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num
         extra_cost = tf.reduce_sum(tf.square(tf.minimum(X,30)-30) + tf.square(tf.maximum(X,70)-70))
         #Advanced Version
         cost = tf.reduce_sum(tf.square(y-yhat))+5.0*extra_cost*extra_cost
-        optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(cost,var_list=[X])
-        #optimizer = tf.train.AdamOptimizer(learning_rate=lr_rate, beta2=lr_decay,epsilon=0.1).minimize(cost,var_list=[X])
+        #optimizer = tf.train.GradientDescentOptimizer(learning_rate=0.1).minimize(cost,var_list=[X])
+        optimizer = tf.train.AdamOptimizer(learning_rate=lr_rate, beta2=lr_decay,epsilon=0.1).minimize(cost,var_list=[X])
         #Basic Version
         #cost = tf.reduce_sum(tf.square(y-yhat))
         #optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost,var_list=[X])
@@ -115,13 +116,18 @@ def main(data,data_folder,output_folder,weight_name_load,test_file,init_list,num
                 cost_file.write(str(float(cum_loss))+str("\n"))
                 myvals0 = sess.run(yhat,feed_dict={y:train_Y})
                 print("Step: " + str(step) + " : Loss: " + str(cum_loss) + " : " + str(X.eval()))
-                #if abs(cum_loss-prev_losses) < .0001:
-                #    print("Converged once")
-                #    break
+                if abs(cum_loss-prev_losses) < .00001:
+                    print("Converged once")
+                    break
                 prev_losses = cum_loss
                 cum_loss = 0
-        if cum_loss < 1:
-            break
+        if cum_loss < 0.1:
+            succes += 1
+           #break
+            print succes
+
+    print "Final: " , succes
+
 
 
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
@@ -132,19 +138,19 @@ if __name__=="__main__":
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined')
     parser.add_argument("--data_folder",type=str,default='data/')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20/')
+    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20_2_new/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--test_file",type=str,default='Test TiO2 Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9')
-    parser.add_argument("--init_list",type=str,default="50,50,50,50,50")
+    parser.add_argument("--init_list",type=str,default="40,40,40,40,40")
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)
     parser.add_argument("--percent_val",default=.2)
     parser.add_argument("--num_iterations",default=200000)
     #parser.add_argument("--lr_rate",default=1.0)
     #parser.add_argument("--lr_decay",default=.90)
-    parser.add_argument("--lr_rate",default=1.0)
-    parser.add_argument("--lr_decay",default=.9)
+    parser.add_argument("--lr_rate",default=0.5)
+    parser.add_argument("--lr_decay",default=.7)
 
 
     args = parser.parse_args()
