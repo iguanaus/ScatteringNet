@@ -1,4 +1,4 @@
-function [time,convergence] = run_opt(start_params,cost_func,options)
+function [time,convergence,x] = run_opt(start_params,cost_func,options)
 
 A = [];
 b = [];
@@ -13,5 +13,6 @@ x0 = start_params;
 
 tic;
 [x,fval,exitflag,output] = fmincon(cost_func,x0,A,b,Aeq,beq,lb,ub,nonlcon, options);
+x
 time = toc;
 convergence = fval;

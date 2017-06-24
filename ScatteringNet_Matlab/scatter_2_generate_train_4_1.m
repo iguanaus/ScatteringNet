@@ -6,7 +6,7 @@ up_bound = 70;
 num_iteration = 20000;
 n = 0;
 
-num_layers = 6;
+num_layers = 4;
 
 tic
 while n < num_iteration
@@ -27,5 +27,5 @@ while n < num_iteration
 end
 toc
 
-csvwrite(strcat('data/',num2str(num_layers),'_layer_tio2_fixed_06_21_2.csv'),myspects);
-csvwrite(strcat('data/',num2str(num_layers),'_layer_tio2_fixed_06_21_2_val.csv'),values);
+csvwrite(strcat('data/',num2str(num_layers),'_layer_tio2_fixed_06_21_1.csv'),myspects);
+csvwrite(strcat('data/',num2str(num_layers),'_layer_tio2_fixed_06_21_1_val.csv'),values);

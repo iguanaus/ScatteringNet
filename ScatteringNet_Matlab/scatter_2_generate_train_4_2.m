@@ -6,7 +6,7 @@ up_bound = 70;
 num_iteration = 20000;
 n = 0;
 
-num_layers = 6;
+num_layers = 4;
 
 tic
 while n < num_iteration

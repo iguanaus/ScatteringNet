@@ -14,10 +14,10 @@ spectrum_run = scatter_0_gen_spectrum_faster(r,omega,eps);
 spectrum_new = spectrum_run(1:2:401,1);
 %length(spectrum_new)
 %length(spectToCompare)
-cost = sum((spectrum_new-spectToCompare).^2);
+%cost = sum((spectrum_new-spectToCompare).^2);
 gradient = Jacobian2Gradient(Jacobian,spectrum_new,spectToCompare)*2.0;
 %gradient
-%cost = mean(spectrum_new)/mean(spectrum_new(50:60,:));
+cost = mean(spectrum_new)/mean(spectrum_new(50:60,:));
     
 %cost = sum(spectrum_new)./(spectrum_new(49)+spectrum_new(50)+spectrum_new(51));
 end

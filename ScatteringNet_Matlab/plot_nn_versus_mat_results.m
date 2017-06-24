@@ -5,7 +5,7 @@ for i=0:4
     bias{i+1} = load('spectrums/Dielectric_TiO2_5_06_20/b_'+string(i)+'.txt');
 end
 
-input = [33.8;32.3;36.3;35.2;38.9]
+input = [33.8;32.3;70;35.2;60]
 lambda = linspace(400, 801, 401)';
 result = NN(wgts,bias,input)
 result2 = scatter_0_generate_spectrum(input);
