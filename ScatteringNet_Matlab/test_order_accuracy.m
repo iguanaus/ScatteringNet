@@ -18,17 +18,23 @@ eps_silica = 2.04*ones(length(omega), 1);
 my_lam = lambda./1000;
 eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
 
+val = 500.0;
+f = 1.0;
+wo = 2*pi./val;
+gamma = .01;
+ep_no = 1.85;
+eps_jagg = ep_no + f*wo*wo./(wo*wo-omega.*omega-i.*omega*gamma*wo);
 
 % test case one: 40-nm-radius silver sphere in water
-eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
+eps = [eps_silver eps_silica eps_jagg eps_water];
 
-a = [70,70,70,70,70,70,70,70];
-cs_loworder = total_cs(a,omega,eps,15);
+a = [70,70,70];
+cs_loworder = total_cs(a,omega,eps,8);
 cs_highorder = total_cs(a,omega,eps,25);
 dif = (cs_loworder(1:1:401,1)-cs_highorder(1:1:401,1))./cs_loworder(1:1:401,1)*100.0;
 plot(lambda, [dif]);
-%spect = total_cs(a,omega,eps,8);
-%#spect2= total_cs(a,omega,eps,50);
+%spect = total_cs(a,omega,eps,7);
+%spect2= total_cs(a,omega,eps,50);
 %spect3= total_cs(a,omega,eps,5);
 %spect4= total_cs(a,omega,eps,7);
 %spect5= total_cs(a,omega,eps,10);%

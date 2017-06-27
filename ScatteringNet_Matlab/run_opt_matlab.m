@@ -13,6 +13,16 @@ addpath(genpath('dlib'));
 
 % fun = @(x)min(x(2).^2-x(1).^2);
 %x0 = 50 * ones(1,5);
+
+lambda = linspace(400, 800, 401)';
+omega = 2*pi./lambda;
+
+eps_silica = 2.04*ones(length(omega), 1);
+my_lam = lambda./1000;
+eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
+eps_water  = 1.77*ones(length(omega), 1);
+eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
+
 x0 = [50,50,50,50,50]
 A = [];
 b = [];
@@ -22,11 +32,7 @@ lb = 30 * ones(1,5);
 ub = 70 * ones(1,5);
 nonlcon = [];
 
-filename = 'spectrums/TestTiO2Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9.csv';
-myspect = csvread(filename);
-save('var.mat','myspect')
-
-options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',.1,'SpecifyObjectiveGradient',true);
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',.1,'SpecifyObjectiveGradient',false);
 tic
 %[x,fval] = patternsearch(@cost_function_try,x0,A,b,Aeq,beq,lb,ub,nonlcon,options)
 fval = 200.0
@@ -37,9 +43,9 @@ for i=0:4
     wgts{i+1} = transpose(load('spectrums/Dielectric_Corrected_TiO2/w_'+string(i)+'.txt'));
     bias{i+1} = load('spectrums/Dielectric_Corrected_TiO2/b_'+string(i)+'.txt');
 end
-filename = 'spectrums/TestTiO2Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9.csv';
+filename = 'spectrums/test_tio2_fixed_8/47.5_45.3_60.6_61.8_37.5_49.6_47.8_55.9.csv';
 myspect = csvread(filename);
-myspect = myspect(1:1:200,1);
+myspect = myspect(1:1:201,1);
 dim = size(wgts);
 
 %while fval > 100.0
@@ -48,12 +54,20 @@ r2 = round(rand*40+30,1);
 r3 = round(rand*40+30,1);
 r4 = round(rand*40+30,1);
 r5 = round(rand*40+30,1);
+r6 = round(rand*40+30,1);
+r7 = round(rand*40+30,1);
+r8 = round(rand*40+30,1);
 
 
-x0 = [64.7;33.4;46;40.4;62];%r1,r2,r3,r4,r5]
+%x0 = [r1,r2,r3,r4,r5,r6,r7,r8]
+%x0 = [50;50;50;50;50;50;50;50];
+x0 = [49.5;47.4;47.9;42.3;50.3;50.4;62.7;61.8]
+%x0 = [50,50,50,50,50,50,50,50]
 %x0 = [r1;r2;r3;r4;r5]
-cost_func = @(x)cost_function_math(x,wgts,bias,dim(2),myspect)
+cost_func = @(x)cost_function_math(x,wgts,bias,dim(2),myspect,omega,eps)
 
 [x,fval,exitflag,output] = fmincon(cost_func,x0,A,b,Aeq,beq,lb,ub,nonlcon, options)
 %end
+x
+fval
 toc

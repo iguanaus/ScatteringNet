@@ -11,7 +11,7 @@ function [cost,gradient] = cost_function_nn(x,weights,biases,depth,spectCompare)
     
     
   %cost = sum(layer)./(layer(49)+layer(50)+layer(51));
-  cost = mean(layer)/mean(layer(50:60,:));
-  %cost = sum((spectCompare-layer).^2);
+  %cost = mean(layer)/mean(layer(50:60,:));
+  cost = sum((spectCompare-layer).^2);
   gradient = Jacobian2Gradient(Jacobian,layer,spectCompare)*2.0;
 end

@@ -165,7 +165,7 @@ if __name__=="__main__":
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
-    parser.add_argument("--n_batch",type=int,default=100)
+    parser.add_argument("--n_batch",type=int,default=98)
     parser.add_argument("--numEpochs",type=int,default=2000)
     parser.add_argument("--lr_rate",default=.0005)
     parser.add_argument("--lr_decay",default=.9)
