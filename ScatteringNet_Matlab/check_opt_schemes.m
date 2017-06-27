@@ -19,7 +19,7 @@ myspect = csvread(filename);
 myspect = myspect(1:1:200,1);
 dim = size(wgts);
 
-options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',1.0,'SpecifyObjectiveGradient',true);
+options = optimoptions('fmincon','Display','iter','Algorithm','interior-point','ObjectiveLimit',1.0,'GradObj','on');
 
 %cost_func_nn = @(x)cost_function_math(x,wgts,bias,dim(2),myspect,omega,eps);
 cost_func_nn = @(x)cost_function_nn(x,wgts,bias,dim(2),myspect);
