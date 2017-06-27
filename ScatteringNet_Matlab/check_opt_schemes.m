@@ -11,8 +11,8 @@ eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica ep
 wgts = cell(0);
 bias = cell(0);
 for i=0:4
-    wgts{i+1} = transpose(load('spectrums/8_Layer_TiO2_Final_3/w_'+string(i)+'.txt'));
-    bias{i+1} = load('spectrums/8_Layer_TiO2_Final_3/b_'+string(i)+'.txt');
+    wgts{i+1} = transpose(load(strcat('spectrums/8_Layer_TiO2_Final_3/w_',num2str(i),'.txt')));
+    bias{i+1} = load(strcat('spectrums/8_Layer_TiO2_Final_3/b_',num2str(i),'.txt'));
 end
 filename = 'spectrums/test_tio2_fixed_8/47.5_45.3_60.6_61.8_37.5_49.6_47.8_55.9.csv';
 myspect = csvread(filename);
