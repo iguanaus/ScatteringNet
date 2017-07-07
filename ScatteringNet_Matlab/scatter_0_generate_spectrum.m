@@ -20,10 +20,12 @@ eps_water  = 1.77*ones(length(omega), 1);
 
 eps = [];
 for i = 1:length(r)
-	if mod(i,2) == 1
+	if mod(i,2) == 0
+        %eps = [eps eps_gold];
 		eps = [eps eps_silica];
-	else
-		eps = [eps eps_tio2];
+    else
+        %eps = [eps eps_silver];
+        eps = [eps eps_tio2];
 	end
 end
 eps = [eps eps_water];
@@ -42,5 +44,5 @@ if length(r) == 8 || length(r) == 9
 	order = 15;
 end
 
-spectrum = total_cs(r,omega,eps,order)/(pi*sum(r)^2);
+spectrum = total_cs(r,omega,eps,order)%/(pi*sum(r)^2);
 %spectrum = total_cs(r,omega,eps,9);

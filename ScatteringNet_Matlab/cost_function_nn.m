@@ -4,7 +4,6 @@ function [cost,gradient] = cost_function_nn(x,weights,biases,depth,spectCompare)
   %for j=2:depth-1;
   %  	layer = max(0,weights{j}*layer)+biases{j};
   %end
-  
   [layer, Jacobian] = NN(weights,biases,x);
   %layer = weights{depth}*layer+biases{depth};
   %Jacobian = layer;

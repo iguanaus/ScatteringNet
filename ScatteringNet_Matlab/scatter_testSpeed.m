@@ -22,7 +22,7 @@ eps = [eps_silver eps_silica eps_silver eps_silica eps_silver eps_water];
 %listOfRunnings=[10 20]
 low_bound = 30;
 up_bound = 70;
-num_iteration = 1000;
+num_iteration = 100;
 n = 0;
 r1 = round(rand*40+30,1);
 r2 = round(rand*40+30,1);
@@ -56,7 +56,7 @@ chain = cell(0);
 tic
 
 while n < num_iteration
-  [layer,grad] = NN(weights,biases,input);
+  %[layer,grad] = NN(weights,biases,input);
   %layer = max(0,weights{1}*input)+biases{1};
   %for j=2:depth-1;
   %  layer = max(0,weights{i}*layer)+biases{i};
@@ -64,14 +64,14 @@ while n < num_iteration
   %layer = weights{depth}*layer+biases{depth};
 
   n = n + 1;
-  %spectrum = total_cs([r1,r2,r3,r4,r5,r6,r7,r8],omega,eps,15)/(pi*sum([r1,r2,r3,r4,r5,r6,r7,r8])^2);
+  spectrum = total_cs([r1,r2,r3,r4,r5,r6,r7,r8],omega,eps,15)/(pi*sum([r1,r2,r3,r4,r5,r6,r7,r8])^2);
   %r6 = round(rand*40+30,1);
   %r7 = round(rand*40+30,1);
   %r8 = round(rand*40+30,1);
   %spect = scatter_0_generate_spectrum([r1,r2,r3,r4,r5]);%,r6,r7,r8]);
   %myspects = [myspects spect(1:2:401,1)];
   %values = [values ; [r1,r2,r3,r4,r5]];%,r6,r7,r8]];
-  if rem(n, 1000) ==0;
+  if rem(n, 100) ==0;
     disp('On: ')
     disp(n)
     disp(num_iteration)

@@ -19,12 +19,12 @@ def read_file(filename):
 
 legend = []
 
-name,a1,p1 = read_file("results/8_Layer_TiO2_Final_3/test_out_file_300.txt")
+name,a1,p1 = read_file("results/J-Aggregate/test_out_file_300.txt")
 legend.append(name + "_actual")
 legend.append(name+"_predicted")
 
-plt.plot(a1)
-plt.plot(p1)
+plt.plot(range(400,802,2),a1)
+plt.plot(range(400,802,2),p1)
 
 
 
@@ -76,8 +76,9 @@ plt.plot(p1)
 
 
 plt.title('Comparing spectrums')
-plt.ylabel("Mean square distance")
-plt.xlabel("Wavelength")
+
+plt.ylabel("Cross Scattering Amplitude")
+plt.xlabel("Wavelength (nm)")
 plt.legend(legend, loc='top left')
 plt.show()
 

@@ -137,8 +137,8 @@ if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
     parser.add_argument("--data",type=str,default='data/5_layer_tio2_combined')
-    parser.add_argument("--data_folder",type=str,default='data/')
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_TiO2_5_06_20_2_new/')
+    parser.add_argument("--data_folder",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/3_layer_tio2_fixed_06_21_1')
+    parser.add_argument("--output_folder",type=str,default='results/3_Layer_TiO2_100_layer/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--test_file",type=str,default='Test TiO2 Fixed/test_tio2_fixed33.8_32.3_36.3_35.2_38.9')

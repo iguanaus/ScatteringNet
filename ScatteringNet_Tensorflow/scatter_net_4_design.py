@@ -72,11 +72,11 @@ def main(data,data_folder,output_folder,weight_name_load,spect_file,init_list,nu
 
     topval = tf.abs(tf.matmul(y,tf.transpose(tf.abs(yhat)))) #This will select all the values that we want.
     botval = tf.abs(tf.matmul(tf.abs(y-1),tf.transpose(tf.abs(yhat)))) #This will get the values that we do not want. 
-    cost = botval/topval#topval#/botval
+    cost = topval/botval#botval/topval#topval#/botval
 
     #cost    = tf.reduce_mean(tf.nn.softmax_cross_entropy_with_logits(labels=y, logits=yhat))
     optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost,var_list=[X])
-    #updates = tf.train.GradientDescentOptimizer(0.01).minimize(cost)
+    #optimizer = tf.train.GradientDescentOptimizer(0.01).minimize(cost,var_list=[X])
 
     # Run SGD
     with tf.Session() as sess:
@@ -109,13 +109,13 @@ def main(data,data_folder,output_folder,weight_name_load,spect_file,init_list,nu
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='data/order_die') #For input size.
+    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/jagg_layer_tio2_fixed_06_21_1') #For input size.
     parser.add_argument("--data_folder",type=str,default='data/') #For where the test_answer is
-    parser.add_argument("--output_folder",type=str,default='results/Dielectric_Order/')
+    parser.add_argument("--output_folder",type=str,default='results/J-Aggregate/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--spect_file",type=str,default='test_answer')
-    parser.add_argument("--init_list",type=str,default="40,40,40,40,40")
+    parser.add_argument("--init_list",type=str,default="50,50,50,500")
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)
     parser.add_argument("--percent_val",default=.2)

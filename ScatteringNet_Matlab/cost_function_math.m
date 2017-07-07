@@ -11,7 +11,7 @@ function [cost,gradient] = cost_function_math(r,weights,biases,depth,spectToComp
 [layer, Jacobian] = NN(weights,biases,r);
 %length(layer)
 spectrum_run = scatter_0_gen_spectrum_faster(r,omega,eps);
-spectrum_new = spectrum_run(1:2:399,1);
+spectrum_new = spectrum_run(1:2:401,1);
 %length(spectrum_new)
 %length(spectToCompare)
 cost = sum((spectrum_new-spectToCompare).^2);

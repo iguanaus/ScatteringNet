@@ -9,6 +9,6 @@ for i = 1:100
 	r7 = round(rand*40+30,1);
 	r8 = round(rand*40+30,1);
 	
-	start_params = [r1;r2;r3;r4;r5;r6;r7;r8];
+	start_params = [r1;r2;r3;r4;r5;r6]%;r7;r8];%;r4;r5;r6;r7];
 	all_start_params = [all_start_params , start_params]
 end
