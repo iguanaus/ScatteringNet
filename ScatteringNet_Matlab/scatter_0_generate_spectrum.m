@@ -44,5 +44,5 @@ if length(r) == 8 || length(r) == 9
 	order = 15;
 end
 
-spectrum = total_cs(r,omega,eps,order)%/(pi*sum(r)^2);
+spectrum = total_cs(r,omega,eps,order)/(pi*sum(r)^2);
 %spectrum = total_cs(r,omega,eps,9);
