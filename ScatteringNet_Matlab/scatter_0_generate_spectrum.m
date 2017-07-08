@@ -20,7 +20,7 @@ eps_water  = 1.77*ones(length(omega), 1);
 
 eps = [];
 for i = 1:length(r)
-	if mod(i,2) == 0
+	if mod(i,2) == 1
         %eps = [eps eps_gold];
 		eps = [eps eps_silica];
     else

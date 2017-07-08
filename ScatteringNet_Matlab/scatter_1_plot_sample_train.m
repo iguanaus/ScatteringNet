@@ -4,13 +4,13 @@ lambda = linspace(400, 800, 401)';
 values = [];
 myspects = [];
 
-for v1=[30];
-    for v2=[30];
-        for v3=[30];
+for v1=[31.2];
+    for v2=[37.5];
+        for v3=[67.7];
             for v4=[30];
-                for v5=[30 40 50 60 70 90];
+                for v5=[30];
                     
-                        spect = scatter_0_generate_spectrum([v1,v2,v3,v4,v5]);
+                        spect = scatter_0_generate_spectrum([v1,v2,v3]);
                         %spect(1:1:501,1)./(3*lambda.*lambda)*2*pi
                         myspects = [myspects spect(1:1:401,1)];%./(3*lambda.*lambda)*2*pi];
                         myname = num2str(strcat(num2str(v1),'--',num2str(v2),'--',num2str(v3),'--',num2str(v4),'--',num2str(v5)));

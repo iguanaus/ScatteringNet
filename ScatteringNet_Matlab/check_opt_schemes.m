@@ -28,7 +28,7 @@ cost_func_nn = @(x)cost_function_math(x,wgts,bias,dim(2),myspect,omega,eps);
 %This is the actual computation
 totconv = 0;
 tottime = 0;
-for i = 1:5
+for i = 1:50
 	start_params = all_start_params(:,i)
 	%r1 = round(rand*40+30,1);
 	%r2 = round(rand*40+30,1);
@@ -39,8 +39,8 @@ for i = 1:5
 
 	[mytime, convergence] = run_opt(start_params,cost_func_nn,options);
 	mytime;
-	if (convergence < 1.0)
-		convergence = 1.0;
+	if (convergence < 0.1)
+		convergence = 0.1;
 	else
 		convergence = 0.0;
 	end
