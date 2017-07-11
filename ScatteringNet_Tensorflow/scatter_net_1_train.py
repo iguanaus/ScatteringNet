@@ -13,6 +13,8 @@ import argparse, os
 RANDOM_SEED = 42
 tf.set_random_seed(RANDOM_SEED)
 
+num_decay = 43200
+
 def init_weights(shape):
     """ Weight initialization """
     weights = tf.random_normal(shape, stddev=.1)
@@ -52,7 +54,7 @@ def forwardprop(X, weights, biases, num_layers,dropout=False):
         else:   
             htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
         print("Bias: " , i, " : ", biases[i])
-    drop_out = tf.nn.dropout(htemp,0.9)
+    #drop_out = tf.nn.dropout(htemp,0.9)
     yval = tf.add(tf.matmul(htemp,weights[-1]),biases[-1])
     print("Last bias: " , biases[-1])
     return yval
@@ -113,7 +115,10 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=lr_rate, decay=lr_decay).minimize(cost)
+    global_step = tf.Variable(0, trainable=False)
+    learning_rate = tf.train.exponential_decay(lr_rate,global_step,num_decay,.96,staircase=False)
+
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate, decay=lr_decay).minimize(cost,global_step=global_step)
 
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
@@ -167,7 +172,7 @@ if __name__=="__main__":
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
     parser.add_argument("--numEpochs",type=int,default=200)
-    parser.add_argument("--lr_rate",default=.00001)
+    parser.add_argument("--lr_rate",default=.1)
     parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)
