@@ -1,11 +1,11 @@
 wgts = cell(0);
 bias = cell(0);
 for i=0:4
-    wgts{i+1} = transpose(load('spectrums/6_Layer_TiO2_225_layer/w_'+string(i)+'.txt'));
-    bias{i+1} = load('spectrums/6_Layer_TiO2_225_layer/b_'+string(i)+'.txt');
+    wgts{i+1} = transpose(load('spectrums/4_Layer_TiO2_125_layer/w_'+string(i)+'.txt'));
+    bias{i+1} = load('spectrums/4_Layer_TiO2_125_layer/b_'+string(i)+'.txt');
 end
 
-input = [33.8;54.3;43.3;35.2;60;40]
+input = [42.4;51.1;36.6;54.1]
 lambda = linspace(400, 801, 401)';
 result = NN(wgts,bias,input)
 result2 = scatter_0_generate_spectrum(input);
