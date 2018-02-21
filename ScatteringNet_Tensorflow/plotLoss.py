@@ -3,8 +3,8 @@ import sys
 import matplotlib.pyplot as plt
 import numpy as np
 #'results/Dielectric_Massive/train_train_loss_0.txt',
-direc='results/3_Layer_TiO2_100_layer_2ndTry/'
-loss_files=[direc+"train_train_loss_19.txt",direc+"train_train_loss_20.txt",direc+"train_train_loss_21.txt",direc+"train_train_loss_22.txt",direc+"train_train_loss_23.txt",direc+"train_train_loss_24.txt",direc+"train_train_loss_25.txt"]
+direc='results/TestingExpDecay/'
+loss_files=[direc+"train_val_loss_8_val.txt"]
 
 #loss_files=['results/3_Layer_TiO2_100_layer/traintrainl_loss_5.txt','results/3_Layer_TiO2_100_layer/traintrainl_loss_6.txt','results/3_Layer_TiO2_100_layer/train_val_loss_7_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_8_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_9_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_10_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_11_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_12_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_13_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_14_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_15_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_16_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_17_val.txt','results/3_Layer_TiO2_100_layer/train_val_loss_18_val.txt']
 
@@ -17,14 +17,14 @@ for i in xrange(0, len(loss_files)):
 	for ele in myls:
 		listLoss.append(ele/200.0*100.0)
 	#listLoss.append(np.genfromtxt(loss_files[i],delimiter=','))
-
+#lossValues = listLoss
 def moving_average(a, n=3) :
     ret = np.cumsum(a, dtype=float)
     ret[n:] = ret[n:] - ret[:-n]
     return ret[n - 1:] / n
 
-print(listLoss)
-print("ListLoss")
+#print(listLoss)
+#print("ListLoss")
 lossValues=np.array(listLoss)
 lossValues=moving_average(lossValues,10)
 #lossValues = np.append(np.genfromtxt(loss_files[0],delimiter=','),listLoss)

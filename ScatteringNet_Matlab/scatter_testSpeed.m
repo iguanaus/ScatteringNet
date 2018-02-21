@@ -31,6 +31,8 @@ r5 = round(rand*40+30,1);
 r6 = round(rand*40+30,1);
 r7 = round(rand*40+30,1);
 r8 = round(rand*40+30,1);
+r9 = round(rand*40+30,1);
+r10 = round(rand*40+30,1);
 
 
 lambda = linspace(400, 800, 401)';
@@ -39,24 +41,25 @@ data = load('data.mat');
 eps_silica = 2.04*ones(length(omega), 1);
 my_lam = lambda./1000;
 eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
-eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
+eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
 
 wgts = cell(0);
 bias = cell(0);
 for i=0:4
-    wgts{i+1} = transpose(load('spectrums/3_Layer_TiO2_Final/w_'+string(i)+'.txt'));
-    bias{i+1} = load('spectrums/3_Layer_TiO2_Final/b_'+string(i)+'.txt');
+    wgts{i+1} = transpose(load('spectrums/10_Layer_4_275/w_'+string(i)+'.txt'));
+    bias{i+1} = load('spectrums/10_Layer_4_275/b_'+string(i)+'.txt');
 end
 weights = wgts;
-input = [50;50;50;50;50;50;50;50];
 biases = bias;
 depth = size(wgts);
 depth = depth(2);
 chain = cell(0);
+input = [r1;r2;r3;r4;r5;r6;r7;r8]
 
 tic
 while n < num_iteration
-  [layer,grad] = NN(weights,biases,[r1;r2;r3]);
+  [layer,grad] = NN(weights,biases,[r1;r2;r3;r4;r5;r6;r7;r8;r9;r10]);
+  
   %layer = max(0,weights{1}*input)+biases{1};
   %for j=2:depth-1;
   %  layer = max(0,weights{i}*layer)+biases{i};
@@ -64,7 +67,7 @@ while n < num_iteration
   %layer = weights{depth}*layer+biases{depth};
 
   n = n + 1;
-  %spectrum = total_cs([r1,r2,r3,r4,r5,r6,r7,r8],omega,eps,15)/(pi*sum([r1,r2,r3,r4,r5,r6,r7,r8])^2);
+  %spectrum = total_cs([r1,r2,r3,r4,r5,r6,r7,r8,r9,r10],omega,eps,18)/(pi*sum([r1,r2,r3,r4,r5,r6,r7,r8,r9,r10])^2);
   %r6 = round(rand*40+30,1);
   %r7 = round(rand*40+30,1);
   %r8 = round(rand*40+30,1);

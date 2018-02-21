@@ -36,7 +36,7 @@ for i=0:4
     wgts{i+1} = transpose(load('spectrums/3_Layer_TiO2_Final/w_'+string(i)+'.txt'));
     bias{i+1} = load('spectrums/3_Layer_TiO2_Final/b_'+string(i)+'.txt');
 end
-filename = 'spectrums/test_tio2_fixed_3/56_60.5_53.csv';
+filename = 'spectrums/test_tio2_fixed_3/44.1_63.2_53.4.csv';
 myspect = csvread(filename);
 myspect = myspect(1:1:201,1);
 dim = size(wgts);
@@ -47,11 +47,13 @@ dim = size(wgts);
 r1 = round(rand*40+30,1);
 r2 = round(rand*40+30,1);
 r3 = round(rand*40+30,1);
-%r4 = round(rand*40+30,1);
-%r5 = round(rand*40+30,1);
-%r6 = round(rand*40+30,1);
-%r7 = round(rand*40+30,1);
-%r8 = round(rand*40+30,1);
+r4 = round(rand*40+30,1);
+r5 = round(rand*40+30,1);
+r6 = round(rand*40+30,1);
+r7 = round(rand*40+30,1);
+r8 = round(rand*40+30,1);
+r9 = round(rand*40+30,1);
+r10 = round(rand*40+30,1);
 
 
 

@@ -109,13 +109,13 @@ def main(data,data_folder,output_folder,weight_name_load,spect_file,init_list,nu
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/jagg_layer_tio2_fixed_06_21_1') #For input size.
+    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/Skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/5_layer_tio2_combined_06_20') #For input size.
     parser.add_argument("--data_folder",type=str,default='data/') #For where the test_answer is
-    parser.add_argument("--output_folder",type=str,default='results/J-Aggregate/')
+    parser.add_argument("--output_folder",type=str,default='/Users/johnpeurifoy/Documents/Skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/spectrums/5_layer_TiO2_200_layer/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--spect_file",type=str,default='test_answer')
-    parser.add_argument("--init_list",type=str,default="50,50,50,500")
+    parser.add_argument("--init_list",type=str,default="50,50,50,50,50")
     parser.add_argument("--num_layers",default=4)
     parser.add_argument("--n_hidden",default=75)
     parser.add_argument("--percent_val",default=.2)

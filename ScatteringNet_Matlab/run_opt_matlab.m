@@ -21,9 +21,9 @@ eps_silica = 2.04*ones(length(omega), 1);
 my_lam = lambda./1000;
 eps_tio2 = 5.913+(.2441)*1./(my_lam.*my_lam-.0803);
 eps_water  = 1.77*ones(length(omega), 1);
-eps = [eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_silica eps_tio2 eps_water];
+eps = [eps_silica eps_tio2 eps_silica eps_water];
 
-x0 = [50,50,50,50,50]
+x0 = [50,50,50]
 A = [];
 b = [];
 Aeq = [];
@@ -40,10 +40,10 @@ fval = 200.0
 wgts = cell(0);
 bias = cell(0);
 for i=0:4
-    wgts{i+1} = transpose(load('spectrums/Dielectric_Corrected_TiO2/w_'+string(i)+'.txt'));
-    bias{i+1} = load('spectrums/Dielectric_Corrected_TiO2/b_'+string(i)+'.txt');
+    wgts{i+1} = transpose(load('spectrums/3_Layer_TiO2_Final/w_'+string(i)+'.txt'));
+    bias{i+1} = load('spectrums/3_Layer_TiO2_Final/b_'+string(i)+'.txt');
 end
-filename = 'spectrums/test_tio2_fixed_8/47.5_45.3_60.6_61.8_37.5_49.6_47.8_55.9.csv';
+filename = 'spectrums/test_tio2_fixed_3/31.2_37.5_67.7.csv';
 myspect = csvread(filename);
 myspect = myspect(1:1:201,1);
 dim = size(wgts);
@@ -61,9 +61,9 @@ r8 = round(rand*40+30,1);
 
 %x0 = [r1,r2,r3,r4,r5,r6,r7,r8]
 %x0 = [50;50;50;50;50;50;50;50];
-x0 = [49.5;47.4;47.9;42.3;50.3;50.4;62.7;61.8]
+%x0 = [49.5;47.4;47.9;42.3;50.3;50.4;62.7;61.8]
 %x0 = [50,50,50,50,50,50,50,50]
-%x0 = [r1;r2;r3;r4;r5]
+x0 = [r1;r2;r3]
 cost_func = @(x)cost_function_math(x,wgts,bias,dim(2),myspect,omega,eps)
 
 [x,fval,exitflag,output] = fmincon(cost_func,x0,A,b,Aeq,beq,lb,ub,nonlcon, options)

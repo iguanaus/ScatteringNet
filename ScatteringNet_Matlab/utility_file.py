@@ -39,9 +39,9 @@ def fixXValues():
 
 #This combines it vertically - stacks them
 def combineFile():
-	file1 = open('data/7_layer_tio2_fixed_06_21_val.csv','r')
-	file2 = open('data/7_layer_tio2_fixed_06_21_2_val.csv','r')
-	out = open('data/7_layer_tio2_combined_06_21_val.csv','w')
+	file1 = open('data/10_layer_tio2_combined_06_21_val.csv','r')
+	file2 = open('data/10_layer_tio2_combined_06_22_complete_val.csv','r')
+	out = open('data/10_layer_tio2_combined_80000_val.csv','w')
 
 
 	for line in file1:
@@ -58,10 +58,10 @@ def combineFile():
 #This combines them horizontally
 def combineFileHorizontally():
 	#f = open('order_die_1.csv','r')
-	out = open('data/7_layer_tio2_combined_06_21.csv','w')
+	out = open('data/10_layer_tio2_combined_80000.csv','w')
 
-	train_Y_1 = np.genfromtxt('data/7_layer_tio2_fixed_06_21.csv',delimiter=',')
-	train_Y_2 = np.genfromtxt('data/7_layer_tio2_fixed_06_21_2.csv',delimiter=',')
+	train_Y_1 = np.genfromtxt('data/10_layer_tio2_combined_06_21.csv',delimiter=',')
+	train_Y_2 = np.genfromtxt('data/10_layer_tio2_combined_06_22_complete.csv',delimiter=',')
 
 	#For each row divide by the wavelength. The wavelength is 400,402,404,......800
 	step = -1

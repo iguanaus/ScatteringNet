@@ -3,7 +3,7 @@
 %filename/myspect outside of the code).
 %NOTE: TO RUN THIS YOU MUST IMPORT THE spherical_code and all subfolders.
 function [cost,gradient] = cost_function_math(r,weights,biases,depth,spectToCompare,omega,eps)
-
+r
 %Change this to the spectrum you want it to match
 % filename = 'spectrums/test_dielectric_large_67_67_33_52_41.csv';
 % myspect = csvread(filename);
