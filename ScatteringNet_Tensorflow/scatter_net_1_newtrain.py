@@ -76,13 +76,14 @@ def get_data(data,percentTest=.2,random_state=42):
     #Normalize train_X and train_Y.
     std_X = (train_X-train_X.mean(axis=0))/train_X.std(axis=0)
     std_Y = (train_Y-train_Y.mean(axis=0))/train_Y.std(axis=0)
-
+    std_X = train_X
+    std_Y = train_Y
     #for ele in train_Y:
     #    print len(ele)
     #    print ele
     X_train, X_test, y_train, y_test = train_test_split(std_X,std_Y,test_size=percentTest,random_state=random_state)
     #Now chunk the val in half 
-    X_test, X_val, y_test, y_val = train_test_split(X_test,y_test,test_size=percentTest,random_state=random_state)
+    X_test, X_val, y_test, y_val = train_test_split(X_test,y_test,test_size=0.5,random_state=random_state)
     print("Train:")
     print(X_train)
     print(y_train)
@@ -129,9 +130,9 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     # Backward propagation
     cost = tf.reduce_sum(tf.square(y-yhat))
     global_step = tf.Variable(0, trainable=False)
-    learning_rate = tf.train.exponential_decay(lr_rate,global_step,num_decay,.96,staircase=False)
+    learning_rate = tf.train.exponential_decay(lr_rate,global_step,int(train_X.shape[0]/n_batch),lr_decay,staircase=False)
 
-    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate, decay=lr_decay).minimize(cost,global_step=global_step)
+    optimizer = tf.train.RMSPropOptimizer(learning_rate=learning_rate).minimize(cost,global_step=global_step)
 
     with tf.Session() as sess:
         init = tf.global_variables_initializer()
@@ -184,18 +185,19 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/6_layer_tio2_combined_06_21')
-    parser.add_argument("--reuse_weights",type=str,default='False')
-    parser.add_argument("--output_folder",type=str,default='results/6_Layer_TiO2_225_layer/')
+    #parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/6_layer_tio2_combined_06_21')
+    parser.add_argument("--data",type=str,default='data/CompleteDataFiles/8_layer_tio2_combined')
+    parser.add_argument("--reuse_weights",type=str,default='True')
+    parser.add_argument("--output_folder",type=str,default='results/begin_test_6_Layer_TiO2_225_layer/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
     parser.add_argument("--numEpochs",type=int,default=200)
-    parser.add_argument("--lr_rate",default=.1)
-    parser.add_argument("--lr_decay",default=.9)
+    parser.add_argument("--lr_rate",default=.001)
+    parser.add_argument("--lr_decay",default=.99)
     parser.add_argument("--num_layers",default=4)
-    parser.add_argument("--n_hidden",default=75)
+    parser.add_argument("--n_hidden",default=250)
     parser.add_argument("--percent_val",default=.2)
 
     args = parser.parse_args()

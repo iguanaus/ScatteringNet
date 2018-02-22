@@ -15,9 +15,10 @@ tf.set_random_seed(RANDOM_SEED)
 
 num_decay = 43200
 
-def init_weights(shape):
+#As per Xaiver init, this should be 2/n(input), though many different initializations can be tried. 
+def init_weights(shape,stddev=.1):
     """ Weight initialization """
-    weights = tf.random_normal(shape, stddev=.1)
+    weights = tf.random_normal(shape, stddev=stddev)
     return tf.Variable(weights)
 
 def init_bias(shape):
@@ -50,9 +51,11 @@ def forwardprop(X, weights, biases, num_layers,dropout=False):
     htemp = None
     for i in xrange(0, num_layers):
         if i ==0:
-            htemp = tf.add(tf.nn.relu(tf.matmul(X,weights[i])),biases[i])    
+            #htemp = tf.add(tf.nn.relu(tf.matmul(X,weights[i])),biases[i])    
+            htemp = tf.nn.relu(tf.add(tf.matmul(X,weights[i]),biases[i]))
         else:   
-            htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
+            #htemp = tf.add(tf.nn.relu(tf.matmul(htemp,weights[i])),biases[i])
+            htemp = tf.nn.relu(tf.add(tf.matmul(htemp,weights[i]),biases[i]))
         print("Bias: " , i, " : ", biases[i])
     #drop_out = tf.nn.dropout(htemp,0.9)
     yval = tf.add(tf.matmul(htemp,weights[-1]),biases[-1])
@@ -76,18 +79,22 @@ def get_data(data,percentTest=.2,random_state=42):
     print(train_X)
     train_Y = np.transpose(np.genfromtxt(y_file,delimiter=','))#[0:20000,:]
     print(train_Y)
+
+    train_X = (train_X-train_X.mean(axis=0))/train_X.std(axis=0)
+
     #for ele in train_Y:
     #    print len(ele)
     #    print ele
-    X_train, X_val, y_train, y_val = train_test_split(train_X,train_Y,test_size=percentTest,random_state=random_state)
-    return X_train, y_train, X_val, y_val
+    X_train, test_X, y_train, test_Y = train_test_split(train_X,train_Y,test_size=percentTest,random_state=random_state)
+    X_test, X_val, y_test, y_val = train_test_split(test_X,test_Y,test_size=.5,random_state=random_state)
+    return X_train, y_train, X_test, y_test, X_val, y_val
 
 def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_batch,numEpochs,lr_rate,lr_decay,num_layers,n_hidden,percent_val):
 
     if not os.path.exists(output_folder):
         os.makedirs(output_folder)
 
-    train_X, train_Y , val_X, val_Y = get_data(data,percentTest=percent_val)
+    train_X, train_Y , test_X, test_Y, val_X, val_Y = get_data(data,percentTest=percent_val)
 
     x_size = train_X.shape[1]
     y_size = train_Y.shape[1]
@@ -114,7 +121,9 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
     yhat    = forwardprop(X, weights,biases,num_layers)
     
     # Backward propagation
-    cost = tf.reduce_sum(tf.square(y-yhat))
+    dif = tf.abs(y-yhat)
+    peroff = tf.reduce_mean(dif/tf.abs(y))
+    cost = tf.reduce_mean(tf.square(y-yhat))
     global_step = tf.Variable(0, trainable=False)
     learning_rate = tf.train.exponential_decay(lr_rate,global_step,num_decay,.96,staircase=False)
 
@@ -127,6 +136,9 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
         curEpoch=0
         cum_loss = 0
         numFile = 0 
+        perinc = 0
+        patienceLimit = 10
+        lowVal = 1000000.0
         while True:
             train_file_name = output_folder+"train_train_loss_" + str(numFile) + ".txt"
             if os.path.isfile(train_file_name):
@@ -141,41 +153,60 @@ def main(data,reuse_weights,output_folder,weight_name_save,weight_name_load,n_ba
             batch_x = train_X[step * n_batch : (step+1) * n_batch]
             batch_y = train_Y[step * n_batch : (step+1) * n_batch]
             sess.run(optimizer, feed_dict={X: batch_x, y: batch_y})
-            cum_loss += sess.run(cost,feed_dict={X:batch_x,y:batch_y})
+            peroffinc, cuminc = sess.run([peroff,cost],feed_dict={X:batch_x,y:batch_y})
+            #print("loss: " , cuminc)
+            cum_loss += cuminc
+            perinc += peroffinc
             step += 1
-            if step == int(train_X.shape[0]/n_batch): #Epoch finished
-                step = 0
+
+            if step ==  int(train_X.shape[0]/n_batch): #Epoch finished
+                #step = 0
                 curEpoch +=1            
-                train_loss_file.write(str(float(cum_loss))+str("\n"))
+                cum_loss = cum_loss/float(step)
+                perinc = perinc/float(step)
+                step = 0
+                train_loss_file.write(str(float(cum_loss))+"," + str(perinc) + str("\n"))
                 if (curEpoch % 10 == 0 or curEpoch == 1):
                     #Calculate the validation loss
-                    val_loss = sess.run(cost,feed_dict={X:val_X,y:val_Y})
-                    print("Validation loss: " , str(val_loss))
-                    val_loss_file.write(str(float(val_loss))+str("\n"))
+                    val_loss, peroff2 = sess.run([cost,peroff],feed_dict={X:test_X,y:test_Y})
+                    print("Validation loss: " , str(val_loss) , " per off: " , peroff2)
+                    val_loss_file.write(str(float(val_loss))+","+str(peroff2)+str("\n"))
                     val_loss_file.flush()
-
-                    print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss))
+                    if (val_loss > lowVal):
+                          patience += 1
+                    else:
+                          patience = 0
+                    lowVal = min(val_loss,lowVal)
+                    print("Epoch: " + str(curEpoch+1) + " : Loss: " + str(cum_loss) + " : " + str(perinc))
                     train_loss_file.flush()
+                    if (patience > patienceLimit):
+                          break
                 cum_loss = 0
+                perinc = 0
         save_weights(weights,biases,output_folder,weight_name_save,num_layers)
+        finalLoss, finalPer = sess.run([cost,peroff],feed_dict={X:val_X,y:val_Y})
+        train_loss_file = open(output_folder+"_final_val_loss_" + str(numFile) + ".txt",'w')
+        train_loss_file.write(str(finalLoss) + "," + str(finalPer))
+        train_loss_file.flush()
     print "========Iterations completed in : " + str(time.time()-start_time) + " ========"
     sess.close()
 
 if __name__=="__main__":
     parser = argparse.ArgumentParser(
         description="Physics Net Training")
-    parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/6_layer_tio2_combined_06_21')
-    parser.add_argument("--reuse_weights",type=str,default='True')
-    parser.add_argument("--output_folder",type=str,default='results/6_Layer_TiO2_225_layer/')
+    parser.add_argument("--data",type=str,default='data/CompleteDataFiles/7_layer_tio2_combined_06_21')
+    #parser.add_argument("--data",type=str,default='/Users/johnpeurifoy/Documents/skewl/PhotoNet/ScatteringNet/ScatteringNet_Matlab/data/CompleteDataFiles/6_layer_tio2_combined_06_21')
+    parser.add_argument("--reuse_weights",type=str,default='False')
+    parser.add_argument("--output_folder",type=str,default='results/7_Layer_TiO2_Final_6/')
         #Generate the loss file/val file name by looking to see if there is a previous one, then creating/running it.
     parser.add_argument("--weight_name_load",type=str,default="")#This would be something that goes infront of w_1.txt. This would be used in saving the weights
     parser.add_argument("--weight_name_save",type=str,default="")
     parser.add_argument("--n_batch",type=int,default=100)
-    parser.add_argument("--numEpochs",type=int,default=200)
-    parser.add_argument("--lr_rate",default=.1)
+    parser.add_argument("--numEpochs",type=int,default=5000) #Max number of epochs to consider.
+    parser.add_argument("--lr_rate",default=.0006)
     parser.add_argument("--lr_decay",default=.9)
     parser.add_argument("--num_layers",default=4)
-    parser.add_argument("--n_hidden",default=75)
+    parser.add_argument("--n_hidden",default=225)
     parser.add_argument("--percent_val",default=.2)
 
     args = parser.parse_args()
